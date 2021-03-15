@@ -3,3 +3,14 @@ When using ResNet101 to extract features out of the ImageNet database we can spl
 For High-level features we use te complete ResNet structure to extract these. But for Low we need to only take the
 structure till conv4_3. And this notation is unclear to us when comparing this to the resnet summary.
 
+2.
+What are the feature embedding functions?
+
+3.
+What does spatial-temporal relation
+
+4.
+When talking about sampling locations p_n, do you mean individual pixels, or box of pixels?
+
+5.
+If sampling locations p_n are boxes of pixels, then can they overlap?
