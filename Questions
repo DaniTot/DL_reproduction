@@ -14,3 +14,6 @@ When talking about sampling locations p_n, do you mean individual pixels, or box
 
 5.
 If sampling locations p_n are boxes of pixels, then can they overlap?
+
+6.
+What is the ILSVRC2015 DET dataset, and where can I find it?
