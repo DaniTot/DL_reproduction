@@ -1,0 +1,22 @@
+Found info
+
+LSTS/experiments/lsts_rfcn/cfgs/lsts_gaussian.yaml or uniform.yaml
+
+N in p_n should be either 40 or 81;
+Image = 600, 1000;
+Num_Anchors: 9;
+
+/LSTS/lib/utils/image_processing.py
+
+Transform function
+
+/LSTS/lib/rpn/generate_anchor.py
+
+Anchor size is [0, 0, 15, 15]
+
+Extra info
+
+Personal
+
+42
+145
