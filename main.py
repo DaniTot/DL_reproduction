@@ -1,10 +1,15 @@
 import torchvision.models as models
 import torch.nn as nn
 
-resnet101 = models.resnet101(True, True)
-print(resnet101)
-ModelResHigh = nn.Sequential(*(list(resnet101.children())[:]))
-ModelResLow = nn.Sequential(*(list(resnet101.children())[:-2])) #2 isn't correct, look at questions.
+model = models.resnet101(pretrained=True)
+HighFeatures = nn.Sequential(*(list(model.children())[:-2]))
+LowFeatures = nn.Sequential(*(list(model.children())[0:6]))
+
+print(HighFeatures)
+
+#HighFeatures.forward()
+
+#print('test', LowFeatures)
 
 #featuresHigh = ModelResHigh('Input')
 #featuresLow = ModelResLow('Input')
