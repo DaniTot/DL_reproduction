@@ -47,10 +47,3 @@ while success:
     print(features_high.shape)
     print(features_low.shape)
 
-
-#HighFeatures.forward()
-
-#print('test', LowFeatures)
-
-#featuresHigh = ModelResHigh('Input')
-#featuresLow = ModelResLow('Input')
