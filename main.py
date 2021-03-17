@@ -13,8 +13,8 @@ LowFeatures = nn.Sequential(*(list(model.children())[0:6]))
 HighFeatures.eval()
 LowFeatures.eval()
 
-print(HighFeatures)
-print(LowFeatures)
+# print(HighFeatures)
+# print(LowFeatures)
 
 
 transform = transforms.Compose([
@@ -25,8 +25,8 @@ transform = transforms.Compose([
                          std=[0.229, 0.224, 0.225])])
 
 
-vid_path = 'C:\\Users\\tothd\\Documents\\TU Delft\\Msc\\Deep Learning\\ILSCVRC2015\\Data\\VID\\snippets'
-train_set_1_path = os.path.join(vid_path, 'train\\ILSVRC2015_VID_train_0000')
+vid_path = os.path.join(os.path.abspath(os.sep), 'Users', 'tothd', 'Documents', 'TU Delft', 'Msc', 'Deep Learning', 'ILSCVRC2015', 'Data', 'VID', 'snippets')
+train_set_1_path = os.path.join(vid_path, 'train', 'ILSVRC2015_VID_train_0000')
 
 
 directory = os.fsencode(train_set_1_path)
