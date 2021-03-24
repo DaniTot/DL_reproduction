@@ -1,15 +1,2 @@
 1.
-When using ResNet101 to extract features out of the ImageNet database we can split this up in 2 parts: High and Low.
-For High-level features we use te complete ResNet structure to extract these. But for Low we need to only take the
-structure till conv4_3. And this notation is unclear to us when comparing this to the resnet summary.
-
-2.
-What are the feature embedding functions?
-
-6.
-What is the ILSVRC2015 DET dataset, and where can I find it?
-
-7.
-Is it possible to install it on Windows?
-
-8.
+What is mxnet.symbols.WeightGenerateK in lsts_network_gaussian.py ln800?
