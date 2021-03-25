@@ -1,3 +1,9 @@
+import torchvision.models as models
+from torchvision import transforms
+import torch.nn as nn
+import torch
+import numpy as np
+
 import os
 import cv2
 import numpy as np
@@ -7,8 +13,16 @@ from LSTS import Agg_LSTS, Com_LSTS
 
 
 class Train:
-    def __init__(self, batch_size):
-        ilscvrc_path = os.path.join(os.path.abspath(os.sep), 'Users', 'tothd', 'Documents', 'TU Delft', 'Msc', 'Deep Learning')
+
+    def __init__(self, batch_size, name):
+        if name == "Daniel":
+            ilscvrc_path = os.path.join(os.path.abspath(os.sep), 'Users', 'tothd', 'Documents', 'TU Delft', 'Msc',
+                                    'Deep Learning')
+        elif name == "Ruben":
+            ilscvrc_path = os.path.join(os.path.abspath(os.sep), 'Users', 'ruben', 'Downloads')
+        else:
+            print("Not a correct name")
+
         vid_path = os.path.join(ilscvrc_path, 'ILSVRC2015', 'Data', 'VID')
         self.train_set_path = os.path.join(vid_path, 'train', 'ILSVRC2015_VID_train_0001')
         assert os.path.isdir(self.train_set_path), self.train_set_path
@@ -123,3 +137,7 @@ class Train:
                     return
                 else:
                     break
+
+
+Tr = Train(1, "Daniel")
+Tr.run()
