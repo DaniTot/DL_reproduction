@@ -128,7 +128,10 @@ class Train:
                         print(conv_feat_oldkey.shape, conv_feat_newkey.shape, feature_low_level.shape)
                         self.LSTS.get_input(conv_feat_oldkey, conv_feat_newkey)
                         self.LSTS.WeightGenerate()
-                        self.LSTS.quality_network(conv_feat_newkey, )
+                        print(self.LSTS.S_p)
+                        # self.LSTS.quality_network(conv_feat_newkey, )
+
+                        return
 
                     # DFA segment
                     else:
@@ -137,8 +140,7 @@ class Train:
                                                                                                       key_frame)
                         high_feat_current = self.LSTS.low2high_transform(feature_low_level)
                         self.LSTS.get_input(self.LSTS.feature_quality, high_feat_current)
-                        self.LSTS.WeightGenerate()
-                        # TODO: quality stuff to get feat_task
+                        # self.LSTS.WeightGenerate()
 
                     # TODO: align conv_feat_oldkey to conv_feat_newkey
 

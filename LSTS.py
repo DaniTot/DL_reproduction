@@ -3,21 +3,31 @@ import torch.nn.functional as F
 import numpy as np
 
 class Com_LSTS():
-    def __init__(self, In_Shape):
+    def __init__(self, In_Shape, N=5):
         # self.weight_SRFU = torch.rand(In_Shape)
-        # self.In_Size = In_Shape
+        self.In_Shape = In_Shape
+        self.N = N
 
         self.feature_quality = None
 
-        #TODO: do we sample all the channels of the feature vecto at the same location?
-        self.Location = [np.random.randint(0, In_Shape[2], 1), np.random.randint(0, In_Shape[3], 1)]
+        # Location is of shape (N, 2)
+        # TODO: do we sample all the channels of the feature vecto at the same location?
+        self.Location = np.array([np.random.randint(0, In_Shape[2]),
+                                  np.random.randint(0, In_Shape[3])])
+        for n in range(N-1):
+            self.Location = np.vstack((self.Location,
+                                       np.array([np.random.randint(0, In_Shape[2]),
+                                                 np.random.randint(0, In_Shape[3])])
+                                       ))
 
         ## for testing purpose
 
-        self.F_0_pn = None
-        self.tk = None
-        self.s_pn = None
-        self.S_pn = None
+        self.F_0_p = None
+        self.s_p = None
+        self.S_p = np.zeros(N)
+
+        self.F_0 = None
+        self.F_1 = None
 
         # Initialize the low2high convolution network
 
@@ -75,34 +85,79 @@ class Com_LSTS():
         return fF_0
 
     def BiLinKernel(self, q, p):
-        # c is always 0. Is that normal?
+        # TODO: In bilinear kernel G(p_n, q), p_n has shape (N, 2), and q has shape of (2). How does that work?
         x = torch.max(torch.as_tensor([0, 1 - torch.abs(q[0] - p[0])]))
         y = torch.max(torch.as_tensor([0, 1 - torch.abs(q[1] - p[1])]))
         c = x * y
+        return c
+
+    def BiLinKernel_vec(self, q, p):
+        # TODO: In bilinear kernel G(p_n, q), p_n has shape (N, 2), and q has shape of (2). How does that work?
+
+        a = 1. - torch.abs(q[:, 0] - p[0])
+        b = 1. - torch.abs(q[:, 1] - p[1])
+        zero = torch.zeros(a.shape)
+
+        x = torch.max(zero, a)
+        y = torch.max(zero, b)
+        c = x * y
+
         return c
 
     def Sum_q(self):
         """
         Populates/updates tensor matrices p_n and F_0_pn
         """
-        p_n = self.F_0[self.Location[0], self.Location[1]]
+        # TODO: What is q?
+        #  Text says: q enumerates all integral spatial locations on the feature map f(Ft).
+        #  What does this mean? Is it just all the [w, h] of embedded F_t?
+        #  Do we sample F(F_t) at q in the summation?
 
-        for i in range(0, self.In_Size):
-            for j in range(0, self.In_Size):
-                self.F_0_pn = self.F_0_pn + (self.BiLinKernel(torch.as_tensor(p_n), torch.as_tensor((i, j))) * self.f(self.F_0)[i, j])
+        F_0_embedded = self.f(self.F_0)
+        for n in range(self.N):
+            sum = None
+            for i in range(0, F_0_embedded.shape[2]):
+                for j in range(0, F_0_embedded.shape[3]):
+                    G = self.BiLinKernel_vec(torch.as_tensor(self.Location), torch.as_tensor((i, j)))
+                    product = G[n] * F_0_embedded[:, :, i, j]
+                    if sum is None:
+                        sum = product
+                    else:
+                        sum += product
+
+            if self.F_0_p is None:
+                self.F_0_p = sum
+            else:
+                self.F_0_p = torch.cat((self.F_0_p, sum), 0)
 
     def dot_product(self):
-        self.s_pn = torch.tensordot(self.F_0_pn, self.f(self.F_1))
+        # TODO: We must take a sample of g(F_t+k), like self.f(self.F_1)[:, :, x, y].
+        #  The text says g(Ft+k)p0 denote the features at location p0.
+        #  What is p0? Is p0 the average location of p_n?
+
+        # TODO: Some of the dot products (similarities) are negative, because F_0_p is sometimes negative.
+        #  Is that normal?
+        p_0 = np.around(np.sum(self.Location, axis=0)/self.N).astype(int)
+        s_p = []
+        for n in range(self.N):
+            dot_product = torch.dot(self.F_0_p[n], self.f(self.F_1)[0, :, p_0[0], p_0[1]])
+            s_p.append(dot_product)
+
+        self.s_p = torch.tensor(s_p)
 
     def Normalize(self):
-        self.S_pn = self.s_pn/torch.sum(self.s_pn)
+        # TODO: Do we normalize based on the sum, or the sum of absolutes?
+        self.S_p = self.s_p/torch.sum(self.s_p)
 
     def WeightGenerate(self):
         self.Sum_q()
         self.dot_product()
         self.Normalize()
+        assert False
 
-        return self.S_pn
+    def AlignFeatures(self):
+        # TODO: How to align conv_feat_oldkey to conv_feat_newkey?
+        return
 
 class Agg_LSTS():
     def __init__(self, In_Size):
@@ -126,11 +181,11 @@ class Agg_LSTS():
         return(self.F_1)
 
 
-In_Size = 20
-Compare = Com_LSTS(In_Size)
-G = Compare.WeightGenerate()
-print(G)
-Aggreg = Agg_LSTS(In_Size)
-diff = Aggreg.Updating(G)
-
-print(diff)
+# In_Size = 20
+# Compare = Com_LSTS(In_Size)
+# G = Compare.WeightGenerate()
+# print(G)
+# Aggreg = Agg_LSTS(In_Size)
+# diff = Aggreg.Updating(G)
+#
+# print(diff)
