@@ -9,7 +9,7 @@ import cv2
 import numpy as np
 
 from FeatureExtractor import FeatureExtractor
-from LSTS import Agg_LSTS, Com_LSTS
+# from LSTS import Agg_LSTS, Com_LSTS
 
 
 class Train:
@@ -43,6 +43,7 @@ class Train:
         self.SCALES = [600, 1000]  # first is scale (the shorter side); second is max size
 
         self.FeEx = FeatureExtractor()
+        # self.Com = Com_LSTS()
 
     def batch_randomizer(self):
         # count how many datasets we have
@@ -119,12 +120,15 @@ class Train:
                 if self.load_frame():
 
                     # Get thefeature vectors from the new frame
+                    # SRFU segment
                     if self.iteration_count % self.key_frame_interval == 0:
                         key_frame = True
+                        conv_feat_oldkey, conv_feat_newkey, feature_low_level = self.FeEx.get_feature(self.new_frame,
+                                                                                                      key_frame)
+                        print(conv_feat_oldkey.shape, conv_feat_newkey.shape, feature_low_level.shape)
+                    # DFA segment
                     else:
                         key_frame = False
-
-                    conv_feat_oldkey, conv_feat_newkey, feature_low_level = self.FeEx.get_feature(self.new_frame, key_frame)
 
                     # TODO: align conv_feat_oldkey to conv_feat_newkey
 
@@ -140,4 +144,4 @@ class Train:
 
 
 Tr = Train(1, "Daniel")
-Tr.run()
+Tr.get_feature()

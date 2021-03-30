@@ -27,10 +27,13 @@ class FeatureExtractor:
         self.new_frame = None
         self.key_frame = None
 
+        self.model_setup()
+
     def model_setup(self):
         self.model = models.resnet101(pretrained=True)
         self.HighFeatures = nn.Sequential(*(list(self.model.children())[:-2]))
         self.LowFeatures = nn.Sequential(*(list(self.model.children())[0:6]))
+        print(self.model)
         self.HighFeatures.eval()
         self.LowFeatures.eval()
 
