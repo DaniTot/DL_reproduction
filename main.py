@@ -9,7 +9,7 @@ import cv2
 import numpy as np
 
 from FeatureExtractor import FeatureExtractor
-# from LSTS import Agg_LSTS, Com_LSTS
+from LSTS import Agg_LSTS, Com_LSTS
 
 
 class Train:
@@ -43,7 +43,7 @@ class Train:
         self.SCALES = [600, 1000]  # first is scale (the shorter side); second is max size
 
         self.FeEx = FeatureExtractor()
-        # self.Com = Com_LSTS()
+        self.LSTS = Com_LSTS([1, 1024, 18, 32])
 
     def batch_randomizer(self):
         # count how many datasets we have
@@ -126,9 +126,19 @@ class Train:
                         conv_feat_oldkey, conv_feat_newkey, feature_low_level = self.FeEx.get_feature(self.new_frame,
                                                                                                       key_frame)
                         print(conv_feat_oldkey.shape, conv_feat_newkey.shape, feature_low_level.shape)
+                        self.LSTS.get_input(conv_feat_oldkey, conv_feat_newkey)
+                        self.LSTS.WeightGenerate()
+                        self.LSTS.quality_network(conv_feat_newkey, )
+
                     # DFA segment
                     else:
                         key_frame = False
+                        conv_feat_oldkey, conv_feat_newkey, feature_low_level = self.FeEx.get_feature(self.new_frame,
+                                                                                                      key_frame)
+                        high_feat_current = self.LSTS.low2high_transform(feature_low_level)
+                        self.LSTS.get_input(self.LSTS.feature_quality, high_feat_current)
+                        self.LSTS.WeightGenerate()
+                        # TODO: quality stuff to get feat_task
 
                     # TODO: align conv_feat_oldkey to conv_feat_newkey
 

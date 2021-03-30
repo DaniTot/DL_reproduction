@@ -31,9 +31,14 @@ class FeatureExtractor:
 
     def model_setup(self):
         self.model = models.resnet101(pretrained=True)
-        self.HighFeatures = nn.Sequential(*(list(self.model.children())[:-2]))
+
+        #TODO: The additional conv layer is added to resnet101, because they did so too.
+        # This way we get the desired channel space
+        self.HighFeatures = nn.Sequential(*(list(self.model.children())[:-2]),
+                                          torch.nn.Conv2d(in_channels=2048, out_channels=1024,
+                                                          kernel_size=3, padding=6, dilation=6))
         self.LowFeatures = nn.Sequential(*(list(self.model.children())[0:6]))
-        print(self.model)
+        # print(self.model)
         self.HighFeatures.eval()
         self.LowFeatures.eval()
 
