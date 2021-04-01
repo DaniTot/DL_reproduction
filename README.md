@@ -1,7 +1,7 @@
 # Reproduction project on "Learning Where to Focus for Efficient Video Object Detection" by Jiang et al.
 
 
-#Introduction 
+# Introduction 
 
 Just a short introduction about the project and the paper.
 
@@ -11,11 +11,11 @@ Just a short introduction about the project and the paper.
 - figure 1 (visual abstract of the paper)
 - Few research
 
-#Original research paper
+# Original research paper
 
 Discussing the goal of the original paper.
 
-#Dataset used
+# Dataset used
 
 ImageVID/ImageNET
 - What is the dataset made off?
@@ -25,7 +25,7 @@ ImageVID/ImageNET
 - Benefits of the dataset
 
 
-#Machine learning model used.
+# Machine learning model used.
 
 ResNet101
 - goal of ResNET
@@ -34,21 +34,21 @@ ResNet101
     - implement image for layer selection
 - complete for high level features
 
-#Own implementation
+# Own implementation
 
 Show what we implemented on our own.
 - Software environment that we used (Python, pytorch)
 
-#Results
+# Results
 
 Show results from our own results.
 
 
-#Conclusion
+# Conclusion
 
 Here comes the conclusion of the paper
 
-#Discussion
+# Discussion
 
 Here comes the discussion of the paper.
 -   flaws of the original paper.
