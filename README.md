@@ -13,9 +13,31 @@ Just a short introduction about the project and the paper.
 
 # Original research paper
 
-Discussing the goal of the original paper.
+Object detection becomes a more prominent aspect in our day to day live. With face recognition 
+for unlocking phones, ball tracking during a football match and autonomous driving. All of these 
+applications have one thing in common, motion. Motion decreases performance of object detection 
+because of occlusion, rare poses, and motion blur. To compensate this we need the temporal 
+information of the object. In earlier work optical flow is used to determine the temporal 
+information, but this has its limitations. Optical flow is time-consuming, with only 10 frames 
+per second (FPS). With the example of autonomous driving this could cause problems. 
+
+So, the writer of the paper introduced, Learnable Spatio-Temporal Sampling (LSTS) to tackle this 
+problem. With this approach high-level features will be propagated across frames to predict the 
+location. By sampling specific location from the feature maps F_t and F_t+k, which are extracted 
+from I_t and I_t+k. Where I_t is the current frame, and I_t+k is the next frame. Then, similarities 
+between feature maps will be used to determine weights needed for propagating between F_t and 
+F_t+k to produce an F’_t+k. This could be iterated to propagate across multiple frames. The High- 
+and Low-feature maps are enhanced by two proposed methods: Sparsely Recursive Feature Updating 
+(SRFU) and Dense Feature Aggregation (DFA), respectively. These methods will be discussed later. 
 
 # Dataset used
+
+ImageNet is a well known name within the machine learning community. With 14 million images, 
+at least 1 million bounding boxes and 20 thousand categories. The large amount of 
+data results in a wide variety of applications. For the paper they use a similar dataset, 
+ImageNet VID. The images are replaced by 3862 training videos, 30 object 
+categories and boundary boxes. Examples are shown in figure ???. Because of storage restricting 
+during reproducibility project a training set of 1910 training videos is used.
 
 ImageVID/ImageNET
 - What is the dataset made off?
@@ -26,6 +48,18 @@ ImageVID/ImageNET
 
 
 # Machine learning model used.
+
+Residual Networks, or ResNet for short, was introduced by researchers at MicroSoft Research 
+in 2015. This architecture tackled the problem with vanishing/exploding gradient caused by 
+large number of layers in convolutional neural networks (CNN) architectures. In ResNet, they 
+implement a so-called skip connection which can skip a certain number of layers within the 
+CNN. Implementing this skip connection it is possible to skip sections that have a negative 
+influence on the performance. With this technique deeper CNNs could be created. In the paper 
+the ResNet101 is used, ResNet is the architecture and 101 are the number of layers. ResNet 
+is implemented to extract the feature maps from the images a stated in the introduction. For 
+the High-Level features the complete ResNet will be used, while for Low-Level features only 
+a part will be used. This cut-off point is notated as “Conv4_3” and can be determined with 
+figure ???.  
 
 ResNet101
 - goal of ResNET
@@ -41,7 +75,7 @@ Show what we implemented on our own.
 
 # Results
 
-Show results from our own results.
+Show the results of our own implementation 
 
 
 # Conclusion
@@ -50,8 +84,18 @@ Here comes the conclusion of the paper
 
 # Discussion
 
+In the introduction of the paper two terms are given: keyframe and non-keyframe. 
+With the naming we can figure out that the keyframe should be more important. 
+But the question still stands, why is that specific frame more important. 
+And after looking in the code became clear that a keyframe is every tenth frame, and the 
+rest are non-keyframes.
+
 Here comes the discussion of the paper.
--   flaws of the original paper.
+-   Flaws of the original paper.
+    - Not all steps are clearly stated in the paper.
+    
+-   Flaws of the github.
+    - Outdated function are used to do certain processes.
 
 
 
