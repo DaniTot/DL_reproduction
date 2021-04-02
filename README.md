@@ -1,6 +1,6 @@
 # Reproduction project on "Learning Where to Focus for Efficient Video Object Detection" by Jiang et al.
 
-Written by. Dani Tóth and Ruben van Oosterhoudt
+Written by Dani Tóth and Ruben van Oosterhoudt
 
 # Introduction 
 
