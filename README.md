@@ -3,6 +3,10 @@
 Written by Dani Tóth and Ruben van Oosterhoudt
 
 # Introduction 
+For the course Deep Learning at the Technical University of Delft we were given the task to replicate a 
+paper published in the field. This to create a better understanding in Deep Learning and gaining 
+experience in reproducing a paper. For the project we chose “Learning Where to Focus for Efficient 
+Video Object Detection” by Jiang et al.
 
 Just a short introduction about the project and the paper.
 
@@ -60,7 +64,12 @@ the ResNet101 is used, ResNet is the architecture and 101 are the number of laye
 is implemented to extract the feature maps from the images a stated in the introduction. For 
 the High-Level features the complete ResNet will be used, while for Low-Level features only 
 a part will be used. This cut-off point is notated as “Conv4_3” and can be determined with 
-figure ???.  
+figure ???. During the reproduction a pre-trained ResNet101 from TorchVision is used for the 
+feature extraction.
+
+![alt text](https://github.com/DaniTot/DL_reproduction/blob/main/Images/architecture_of_ResNet.png)
+
+
 
 ResNet101
 - goal of ResNET
@@ -90,6 +99,12 @@ With the naming we can figure out that the keyframe should be more important.
 But the question still stands, why is that specific frame more important. 
 And after looking in the code became clear that a keyframe is every tenth frame, and the 
 rest are non-keyframes.
+
+During starting phase of our project we tried running the original GitHub code to have a better understanding 
+of the structure. With the given Windows and Linux installer we couldn’t figure out how to make the code run. 
+After this setback we started replication the complete code of the GitHub and tried to make a personal 
+interpretation of the code. Soon after this we found out that a lot of function used are outdated or even 
+non-existing, which made replicating significantly harder. 
 
 Here comes the discussion of the paper.
 -   Flaws of the original paper.
