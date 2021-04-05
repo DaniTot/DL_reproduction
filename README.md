@@ -28,14 +28,15 @@ per second (FPS). With the example of autonomous driving this could cause proble
 
 So, the writer of the paper introduced, Learnable Spatio-Temporal Sampling (LSTS) to tackle this 
 problem. With this approach high-level features will be propagated across frames to predict the 
-location. By sampling specific location from the feature maps F_t and F_t+k, which are extracted 
-from I_t and I_t+k. Where I_t is the current frame, and I_t+k is the next frame. Then, similarities 
-between feature maps will be used to determine weights needed for propagating between F_t and 
-F_t+k to produce an F’_t+k. This could be iterated to propagate across multiple frames. The High- 
-and Low-feature maps are enhanced by two proposed methods: Sparsely Recursive Feature Updating 
-(SRFU) and Dense Feature Aggregation (DFA), respectively. These methods will be discussed later. 
+location. By sampling specific location from the feature maps F<sub>t</sub> and F<sub>t+k</sub>, 
+which are extracted from I<sub>t</sub>, and I<sub>t+k</sub>. Where I<sub>t</sub> is the current frame, 
+and I<sub>t+k</sub> is the next frame. Then, similarities between feature maps will be used to determine 
+weights needed for propagating between F<sub>t</sub> and F<sub>t+k</sub> to produce an F’<sub>t+k</sub>. 
+This could be iterated to propagate across multiple frames. The High- and Low-feature maps are enhanced 
+by two proposed methods: Sparsely Recursive Feature Updating (SRFU) and Dense Feature Aggregation (DFA), 
+respectively. These methods will be discussed later. 
 
-# Dataset used
+# ImageNet VID
 
 ImageNet is a well known name within the machine learning community. With 14 million images, 
 at least 1 million bounding boxes and 20 thousand categories. The large amount of 
@@ -52,7 +53,7 @@ ImageVID/ImageNET
 - Benefits of the dataset
 
 
-# Machine learning model used.
+# ResNet101
 
 Residual Networks, or ResNet for short, was introduced by researchers at MicroSoft Research 
 in 2015. This architecture tackled the problem with vanishing/exploding gradient caused by 
@@ -64,10 +65,10 @@ the ResNet101 is used, ResNet is the architecture and 101 are the number of laye
 is implemented to extract the feature maps from the images a stated in the introduction. For 
 the High-Level features the complete ResNet will be used, while for Low-Level features only 
 a part will be used. This cut-off point is notated as “Conv4_3” and can be determined with 
-figure ???. During the reproduction a pre-trained ResNet101 from TorchVision is used for the 
+the figure shown below. During the reproduction a pre-trained ResNet101 from TorchVision is used for the 
 feature extraction.
 
-![alt text](https://github.com/DaniTot/DL_reproduction/blob/main/Images/architecture_of_ResNet.png)
+![Figure 3](https://github.com/DaniTot/DL_reproduction/blob/main/Images/architecture_of_ResNet.png)
 
 
 
