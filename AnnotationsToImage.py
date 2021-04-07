@@ -2,13 +2,14 @@ import xml.etree.ElementTree as ET
 from PIL import Image
 import matplotlib.pyplot as plt
 import matplotlib.patches as patches
+import matplotlib.ticker as ticker
 import numpy as np
 import os
 
 def load_annotations(path):
     roi_rec = {}
 
-    classes_map =  ['__background__',  # always index 0
+    classes_map = ['__background__',  # always index 0
                     'n02691156', 'n02419796', 'n02131653', 'n02834778',
                     'n01503061', 'n02924116', 'n02958343', 'n02402425',
                     'n02084071', 'n02121808', 'n02503517', 'n02118333',
@@ -66,7 +67,7 @@ def load_annotations(path):
 
     return gt_boxes
 
-def Picture_Annotation(path, gt_boxes):
+def Picture_Annotation(path, gt_boxes, name):
     im = Image.open(path)
 
     if gt_boxes.size == 0:
@@ -87,28 +88,63 @@ def Picture_Annotation(path, gt_boxes):
     rect = patches.Rectangle((x_start, y_start), x_len, y_len, linewidth=1, edgecolor='r', facecolor='none')
     ax.add_patch(rect)
 
-    plt.show()
+    # Hide grid lines
+    ax.grid(False)
+
+    ax.xaxis.set_major_locator(ticker.NullLocator())
+    ax.yaxis.set_major_locator(ticker.NullLocator())
+
+    SavePath = "/Users/thomaswendt/Desktop/Ruben/TU Delft BME 31-3/TU Delft BME/CS4240 Deep Learning/Duo Project/ILSVRC2015_train_00250015/Save/"
+
+
+    plt.savefig(SavePath + name)
 
 def MakePath():
     os.path.expanduser('~/ILSVRC2015/')
 
     return AnnotationPath, PicturePath
 ## Path --> needs to be changed.
-shared_path = "/Users/ruben/Downloads/ILSVRC2015/"
-AnnotationPath = shared_path + "Annotations/VID/train/ILSVRC2015_VID_train_0000/ILSVRC2015_train_00002000/000093.xml"
-PicturePath = shared_path + "Data/VID/train/ILSVRC2015_VID_train_0000/ILSVRC2015_train_00002000/000093.JPEG"
+shared_path = "/Users/thomaswendt/Desktop/Ruben/TU Delft BME 31-3/TU Delft BME/CS4240 Deep Learning/Duo Project/ILSVRC2015_train_00250015"
+AnnotationPath = shared_path + "/Annotations/"
+PicturePath = shared_path + "/Images/"
 
-gt_boxes = load_annotations(AnnotationPath)
-Picture_Annotation(PicturePath, gt_boxes)
+print(AnnotationPath)
+print(PicturePath)
 
-classes = ['airplane', 'antelope', 'bear', 'bicycle',
-           'bird', 'bus', 'car', 'cattle',
-           'dog', 'domestic_cat', 'elephant', 'fox',
-           'giant_panda', 'hamster', 'horse', 'lion',
-           'lizard', 'monkey', 'motorcycle', 'rabbit',
-           'red_panda', 'sheep', 'snake', 'squirrel',
-           'tiger', 'train', 'turtle', 'watercraft',
-           'whale', 'zebra']
+PictureFile = os.walk(PicturePath)
+
+for _, _, AnnotationFile in os.walk(AnnotationPath):
+    continue
+
+for _, _, PictureFile in os.walk(PicturePath):
+    continue
+
+PictureFile.sort()
+AnnotationFile.sort()
+
+images = []
+
+for i in range(0, len(AnnotationFile)):
+    AnnotationPath_i = AnnotationPath + AnnotationFile[i]
+    PicturePath_i = PicturePath + PictureFile[i]
+
+    print(PicturePath_i)
+
+    gt_boxes = load_annotations(AnnotationPath_i)
+    Picture_Annotation(PicturePath_i, gt_boxes, PictureFile[i], images)
+
+    classes = ['airplane', 'antelope', 'bear', 'bicycle',
+               'bird', 'bus', 'car', 'cattle',
+               'dog', 'domestic_cat', 'elephant', 'fox',
+               'giant_panda', 'hamster', 'horse', 'lion',
+               'lizard', 'monkey', 'motorcycle', 'rabbit',
+               'red_panda', 'sheep', 'snake', 'squirrel',
+               'tiger', 'train', 'turtle', 'watercraft',
+               'whale', 'zebra']
+
+    print(classes[np.int(gt_boxes[0, 4] - 1)])
+
+
 
 
 #print(classes[np.int(gt_boxes[0, 4] - 1)])
