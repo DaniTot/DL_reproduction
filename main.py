@@ -10,6 +10,7 @@ import numpy as np
 
 from FeatureExtractor import FeatureExtractor
 from LSTS import Agg_LSTS, Com_LSTS
+# from LSTS2 import Agg_LSTS, Com_LSTS
 
 
 class Train:
@@ -128,10 +129,9 @@ class Train:
                         print(conv_feat_oldkey.shape, conv_feat_newkey.shape, feature_low_level.shape)
                         self.LSTS.get_input(conv_feat_oldkey, conv_feat_newkey)
                         self.LSTS.WeightGenerate()
-                        print(self.LSTS.S_p)
-                        # self.LSTS.quality_network(conv_feat_newkey, )
-
-                        return
+                        self.LSTS.Aggregate()
+                        self.LSTS.quality_network(self.LSTS.F_1, self.LSTS.F_pred, key_frame)
+                        # feat_task = mx.sym.take(mx.sym.Concat(*[feat_task, conv_feat_oldkey], dim=0), eq_flag_key2key)
 
                     # DFA segment
                     else:
@@ -139,8 +139,10 @@ class Train:
                         conv_feat_oldkey, conv_feat_newkey, feature_low_level = self.FeEx.get_feature(self.new_frame,
                                                                                                       key_frame)
                         high_feat_current = self.LSTS.low2high_transform(feature_low_level)
-                        self.LSTS.get_input(self.LSTS.feature_quality, high_feat_current)
-                        # self.LSTS.WeightGenerate()
+                        self.LSTS.get_input(self.LSTS.F_mem, high_feat_current)
+                        self.LSTS.WeightGenerate()
+                        self.LSTS.Aggregate()
+                        align_conv_feat_task = self.LSTS.quality_network(self.LSTS.F_1, self.LSTS.F_pred, key_frame)
 
                     # TODO: align conv_feat_oldkey to conv_feat_newkey
 
