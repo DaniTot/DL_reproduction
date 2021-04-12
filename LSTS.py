@@ -1,6 +1,9 @@
 import torch
 import torch.nn.functional as F
 import numpy as np
+import sys
+import gc
+import itertools
 
 class Com_LSTS():
     def __init__(self, In_Shape, N=5):
@@ -12,17 +15,18 @@ class Com_LSTS():
         self.F_mem = None
 
         # Location is of shape (N, 2)
-        self.Location = np.array([np.random.randint(0, In_Shape[2]),
-                                  np.random.randint(0, In_Shape[3])])
-        for n in range(N-1):
-            self.Location = np.vstack((self.Location,
-                                       np.array([np.random.randint(0, In_Shape[2]),
-                                                 np.random.randint(0, In_Shape[3])])
-                                       ))
-
+        # self.Location = np.concatenate((np.random.uniform(0, In_Shape[2], size=(18, 32, self.N, 1)),
+        #                                np.random.uniform(0, In_Shape[3], size=(18, 32, self.N, 1))),
+        #                                axis=3)
+        self.Location = self.loc_init()
+        print("loc", self.Location.shape)
+        print("shape", In_Shape)
         ## for testing purpose
 
+        self.p_0 = None
+
         self.F_0_p = None
+        self.s_p = torch.zeros((N, 18, 32))
         self.S_p = torch.zeros((N, 18, 32))
 
         self.F_0 = None
@@ -53,6 +57,15 @@ class Com_LSTS():
 
         print('Initialization done!')
 
+    def loc_init(self, init_offset=2):
+        loc = np.zeros((18, 32, self.N, 2))
+        for i in range(18):
+            for j in range(32):
+                for n in range(self.N):
+                    loc[i, j, n, 0] = i + np.clip(np.random.uniform(-1 * init_offset, init_offset), 0, 18-1)
+                    loc[i, j, n, 1] = j + np.clip(np.random.uniform(-1 * init_offset, init_offset), 0, 32-1)
+        return loc
+
     def get_input(self, feat1, feat2):
         self.F_0 = feat1
         self.F_1 = feat2
@@ -64,14 +77,24 @@ class Com_LSTS():
         self.S_p = torch.zeros((self.N, 18, 32))
         self.feature_quality = None
 
+        self.F_pred = torch.zeros(self.F_0.shape)
+        self.grad = torch.zeros((18, 32, self.N, 2))
+
+        if self.F_0_embedded.shape[2] == 18 and self.F_0_embedded.shape[3] == 32 and self.F_1_embedded.shape[2] == 18 and self.F_1_embedded.shape[3] == 32:
+            return 1
+        else:
+            return 0
+
     def quality_network(self, feat1, feat2, key):
         feature_concat = torch.cat([feat1, feat2], dim=0)
         quality_res = self.quality(feature_concat)
-        quality_weights = torch.split(quality_res, quality_res.shape[0]/2, dim=0)
+        assert quality_res.shape[0] / 2 == 1, quality_res.shape
+        quality_weights = torch.split(quality_res, 1, dim=0)
 
         #TODO: make sure dim=1 is correct. MXNet default is axis=-1.
         quality_weights = F.softmax(torch.cat([quality_weights[0], quality_weights[1]], dim=1))
-        quality_weights_splice = torch.split(quality_weights, quality_weights.shape[0]/2, dim=0)
+        assert quality_weights.shape[1]/2 == 1, quality_weights.shape
+        quality_weights_splice = torch.split(quality_weights, 1, dim=1)
 
         quality_weight1 = torch.tile(quality_weights_splice[0], (1, 1024, 1, 1))
         quality_weight2 = torch.tile(quality_weights_splice[1], (1, 1024, 1, 1))
@@ -118,12 +141,13 @@ class Com_LSTS():
         """
         Populates/updates tensor matrices p_n and F_0_pn
         """
-        print("embedded shape", self.F_0_embedded)
+        self.F_0_p = None
         for n in range(self.N):
             sum = None
-            for i in range(0, self.F_0_embedded.shape[2]):
-                for j in range(0, self.F_0_embedded.shape[3]):
-                    G = self.BiLinKernel_vec(torch.as_tensor(self.Location), torch.as_tensor((i, j)))
+            for i in range(0, 18):
+                for j in range(0, 32):
+                    G = self.BiLinKernel_vec(torch.as_tensor(self.Location[self.p_0[0], self.p_0[1], :, :]).float(),
+                                             torch.as_tensor((i, j)).float())
                     product = G[n] * self.F_0_embedded[:, :, i, j]
                     if sum is None:
                         sum = product
@@ -134,61 +158,66 @@ class Com_LSTS():
             else:
                 self.F_0_p = torch.cat((self.F_0_p, sum), 0)
 
-    def dot_product(self, p_0=None):
-        # TODO: We must take a sample of g(F_t+k), like self.f(self.F_1)[:, :, x, y].
-        #  The text says g(Ft+k)p0 denote the features at location p0.
-        #  What is p0? Is p0 the average location of p_n?
-
-        # TODO: Some of the dot products (similarities) are negative, because F_0_p is sometimes negative.
-        #  Is that normal?
-        if p_0 is None:
-            p_0 = np.around(np.sum(self.Location, axis=0)/self.N).astype(int)
+    def dot_product(self):
         s_p = []
         for n in range(self.N):
-            dot_product = torch.dot(self.F_0_p[n], self.F_1_embedded[0, :, p_0[0], p_0[1]])
+            dot_product = torch.dot(self.F_0_p[n], self.F_1_embedded[0, :, self.p_0[0], self.p_0[1]])
             s_p.append(dot_product)
 
         # self.s_p = torch.tensor(s_p)
         return torch.tensor(s_p)
 
-    def Normalize(self, s_p, p_0, absolutes=True):
-        # Embedding is a convolution without ReLU, so we are normalizing with absolutes
+    def Normalize(self, s_p, absolutes=True):
         if absolutes:
-            self.S_p[:, p_0[0], p_0[1]] = s_p / torch.sum(torch.abs(s_p))
+            self.S_p[:, self.p_0[0], self.p_0[1]] = s_p / torch.sum(torch.abs(s_p))
         else:
-            self.S_p[:, p_0[0], p_0[1]] = s_p/torch.sum(s_p)
+            self.S_p[:, self.p_0[0], self.p_0[1]] = s_p/torch.sum(s_p)
         return
+
 
     def WeightGenerate(self):
+        # print("Weigh Generate", self.p_0)
         self.Sum_q()
-        for i in range(0, self.S_p.shape[1]):
-            for j in range(0, self.S_p.shape[2]):
-                p_0 = np.array([i, j])
-                s_p = self.dot_product(p_0=p_0)
-                self.Normalize(s_p, p_0)
+        s_p = self.dot_product()
+        self.Normalize(s_p)
         return
 
-    # def AlignFeatures(self):
-    #     # TODO: How to align conv_feat_oldkey to conv_feat_newkey?
-    #     return
+    def DoImage(self, weight=True, aggregate=True, gradients=True, update=False):
+        for pi in range(18):
+            for pj in range(32):
+                self.p_0 = [pi, pj]
+                print(self.p_0)
 
-    def Aggregate(self):
-        self.F_pred = torch.zeros(self.F_0.shape)
-        for i in range(0, self.S_p.shape[1]):
-            for j in range(0, self.S_p.shape[2]):
-                p_0 = np.array([i, j])
-                n_sum = 0
-                for n in range(self.N):
-                    # Bilinear sampling of F_0 at p_n
-                    bil_sum = 0
-                    for ii in range(0, self.F_0.shape[2]):
-                        for jj in range(0, self.F_0.shape[3]):
-                            G = self.BiLinKernel_vec(torch.as_tensor(self.Location), torch.as_tensor((ii, jj)))
-                            product = G[n] * self.F_0[:, :, ii, jj]
-                            bil_sum += product
-                    n_sum += self.S_p[n, i, j] * bil_sum
-                self.F_pred[0, :, i, j] = n_sum
-        return self.F_pred
+                if weight:
+                    self.WeightGenerate()
+
+                if aggregate:
+                    self.Aggregate(pi, pj)
+
+                if gradients:
+                    self.Gradients(pi, pj)
+                    gc.collect()
+
+                if update:
+                    self.update()
+        print("DONE!")
+        return
+
+    def Aggregate(self, pi, pj):
+        # print("Aggregate", pi, pj)
+        n_sum = 0
+        for n in range(self.N):
+            # Bilinear sampling of F_0 at p_n
+            bil_sum = 0
+            for qi in range(0, self.F_0.shape[2]):
+                for qj in range(0, self.F_0.shape[3]):
+                    G = self.BiLinKernel_vec(torch.as_tensor(self.Location[pi, pj, :, :]).float(),
+                                             torch.as_tensor((qi, qj)).float())
+                    product = G[n] * self.F_0[:, :, qi, qj]
+                    bil_sum += product
+            n_sum += self.S_p[n, pi, pj] * bil_sum
+        self.F_pred[0, :, pi, pj] = n_sum
+        return
 
     # TODO: backpropagation and update
     # TODO: We want high similarity, so S_p = 1 => p_n = p_n + d(S_p)/d(p_n) * lr
@@ -200,24 +229,48 @@ class Com_LSTS():
     # The offset normalization is necessary tomake the offset learning invariant to RoI size.
     # The fc layeris learned by back-propagation, as detailed in appendix A.
     def G_grad(self, p, q):
-        pass
+        if type(p) is torch.Tensor:
+            p = p.detach().numpy()
+        if type(q) is torch.Tensor:
+            q = q.detach().numpy()
+        if np.abs(p[1] - q[1]) < 1 and np.abs(p[0] - q[0]) < 1:
+            if p[0] == q[0]:
+                grad_x = 0
+            else:
+                grad_x = -(p[0] - q[0]) / np.abs(p[0] - q[0]) * (1 - np.abs(p[1] - q[1]))
+            if p[1] == q[1]:
+                grad_y = 0
+            else:
+                grad_y = -(p[1] - q[1]) / np.abs(p[1] - q[1]) * (1 - np.abs(p[0] - q[0]))
 
-    def Gradients(self):
-        self.grad = torch.zeros(self.F_1_embedded.shape[-2])
-        for i in range(self.F_1_embedded.shape[2]):
-            for j in range(self.F_1_embedded.shape[3]):
-                sum = 0
-                for ii in range(self.F_0_embedded.shape[2]):
-                    for jj in range(self.F_0_embedded.shape[3]):
-                        q = np.array([ii, jj])
-                        # for n in range(N):
-                        #     sum += self.G_grad(self.p q) * self.F_0_embedded[:, :, ii, jj] * self.F_1_embedded[:, :, i, j]
-                self.grad[i, j] = sum
+            assert not (np.isnan(grad_x) or np.isnan(grad_y))
+        else:
+            grad_x = 0
+            grad_y = 0
+        return [grad_x, grad_y]
+
+    def Gradients(self, pi, pj):
+        for n in range(self.N):
+            # Grad x
+            self.grad[pi, pj, n, 0] = 0
+            # Grad y
+            self.grad[pi, pj, n, 1] = 0
+            for qi, qj in itertools.product(range(self.F_0_embedded.shape[2]), range(self.F_0_embedded.shape[3])):
+                # print(type(self.Location[self.p_0[0], self.p_0[1], n, :]), type(np.array([qi, qj])))
+                G_grad = self.G_grad(self.Location[self.p_0[0], self.p_0[1], n, :], np.array([qi, qj]))
+
+                self.grad[pi, pj, n, 0] += torch.dot((G_grad[0] * self.F_0_embedded[0, :, qi, qj]),
+                                                     self.F_1_embedded[0, :, self.p_0[0], self.p_0[1]])
+                self.grad[pi, pj, n, 1] += torch.dot((G_grad[1] * self.F_0_embedded[0, :, qi, qj]),
+                                                     self.F_1_embedded[0, :, self.p_0[0], self.p_0[1]])
         return
 
-    def update(self):
-        self.Gradients()
-        # for
+    def update(self, lr=0.1):
+        if type(self.Location) is np.ndarray:
+            self.Location = torch.from_numpy(self.Location) + self.grad*lr
+        elif type(self.Location) is torch.Tensor:
+            self.Location = self.Location + self.grad * lr
+        return
 
     # TODO: offset p_n
 

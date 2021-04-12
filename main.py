@@ -42,6 +42,7 @@ class Train:
         self.key_frame_interval = 10
 
         self.SCALES = [600, 1000]  # first is scale (the shorter side); second is max size
+        self.aspect_ratio = [1280, 720]
 
         self.FeEx = FeatureExtractor()
         self.LSTS = Com_LSTS([1, 1024, 18, 32])
@@ -56,11 +57,25 @@ class Train:
         self.batch_data_idx = np.random.randint(0, mp4_count, self.batch_size)
 
     def select_vid(self):
-        directory = os.fsencode(self.train_set_path)
-        mp4_lst = os.listdir(directory)
-        self.mp4_path = os.path.join(self.train_set_path,
-                                     os.fsdecode(mp4_lst[self.batch_data_idx[self.iteration_count]]))
-        # print(self.mp4_path)
+        while True:
+            directory = os.fsencode(self.train_set_path)
+            mp4_lst = os.listdir(directory)
+            self.mp4_path = os.path.join(self.train_set_path,
+                                         os.fsdecode(mp4_lst[self.batch_data_idx[self.iteration_count]]))
+
+            directory = os.fsencode(self.mp4_path)
+            frame_lst = os.listdir(directory)
+            frame_path = os.path.join(self.mp4_path, os.fsdecode(frame_lst[0]))
+            frame = cv2.imread(frame_path)
+            if frame.shape[0] == self.aspect_ratio[1] and frame.shape[1] == self.aspect_ratio[0]:
+                break
+            else:
+                print("aspects", frame.shape, self.aspect_ratio)
+                add_count = 1
+                while self.batch_data_idx[self.iteration_count] + add_count in self.batch_data_idx:
+                    add_count += 1
+
+                self.batch_data_idx[self.iteration_count] += add_count
         return
 
     def load_frame(self):
@@ -119,18 +134,27 @@ class Train:
             self.select_vid()
             while True:
                 if self.load_frame():
-
+                    print(self.mp4_path)
                     # Get thefeature vectors from the new frame
                     # SRFU segment
                     if self.iteration_count % self.key_frame_interval == 0:
                         key_frame = True
                         conv_feat_oldkey, conv_feat_newkey, feature_low_level = self.FeEx.get_feature(self.new_frame,
                                                                                                       key_frame)
-                        print(conv_feat_oldkey.shape, conv_feat_newkey.shape, feature_low_level.shape)
-                        self.LSTS.get_input(conv_feat_oldkey, conv_feat_newkey)
-                        self.LSTS.WeightGenerate()
-                        self.LSTS.Aggregate()
-                        self.LSTS.quality_network(self.LSTS.F_1, self.LSTS.F_pred, key_frame)
+                        # print(conv_feat_oldkey.shape, conv_feat_newkey.shape, feature_low_level.shape)
+                        ret = self.LSTS.get_input(conv_feat_oldkey, conv_feat_newkey)
+                        if ret == 0:
+                            print(self.LSTS.F_0_embedded.shape, self.LSTS.F_0.shape, self.FeEx.frame.shape)
+                            print(self.LSTS.F_1_embedded.shape, self.LSTS.F_1.shape, self.FeEx.frame.shape)
+                            assert False
+                        else:
+                            # self.LSTS.WeightGenerate()
+                            # self.LSTS.Aggregate()
+                            self.LSTS.DoImage(weight=True, aggregate=True, gradients=True, update=True)
+                            assert False
+                            F_out = self.LSTS.quality_network(self.LSTS.F_1, self.LSTS.F_pred, key_frame)
+                            self.LSTS.DoImage(weight=False, aggregate=False, gradients=False, update=True)
+
                         # feat_task = mx.sym.take(mx.sym.Concat(*[feat_task, conv_feat_oldkey], dim=0), eq_flag_key2key)
 
                     # DFA segment
@@ -140,17 +164,12 @@ class Train:
                                                                                                       key_frame)
                         high_feat_current = self.LSTS.low2high_transform(feature_low_level)
                         self.LSTS.get_input(self.LSTS.F_mem, high_feat_current)
-                        self.LSTS.WeightGenerate()
-                        self.LSTS.Aggregate()
-                        align_conv_feat_task = self.LSTS.quality_network(self.LSTS.F_1, self.LSTS.F_pred, key_frame)
+                        self.LSTS.DoImage(weight=True, aggregate=True, gradients=True, update=False)
+                        F_out = self.LSTS.quality_network(self.LSTS.F_1, self.LSTS.F_pred, key_frame)
+                        self.LSTS.DoImage(weight=False, aggregate=False, gradients=False, update=True)
 
-                    # TODO: align conv_feat_oldkey to conv_feat_newkey
-
-                    # TODO:
-
-                    #TODO: key2key quality network
-
-                    #TODO: etc...
+                    # TODO: RPN
+                    # TODO: ROI proposal
 
                     return
                 else:
