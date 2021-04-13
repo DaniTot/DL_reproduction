@@ -81,8 +81,20 @@ ResNet101
 
 # Own implementation
 
-Show what we implemented on our own.
-- Software environment that we used (Python, pytorch)
+Each frame is classified as a key or non-keyframe, with a fixed keyframe interval of 10, so every 10th frame is considered a keyframe, while all the rest are considered non-keyframes. We extract high-level features from the keyframes (via ResNet101), and low-level features from the non-keyframe (via ResNet101, up until Conv4_3).
+
+Learnable Spatio-Temporal Sampling (LSTS) is the heart of this architecture, and it works as follows:
+
+It takes two feature maps, F<sub>0</sub> and F<sub>1</sub>. N number of fractional sampling locations p<sub>n</sub> are randomly generated around each location of the feature map (where n = 1, 2, …, N). The number of channels of both feature maps is reduced from 1024 to 256 via the embedding function f, which is a single convolutional layer, with single stride, no padding, and a kernel size of 1. Then, for each location p<sub>0</sub> on the feature space F<sub>1</sub>, we repeat the following procedure:
+
+The similarity s(p<sub>n</sub>) between features p<sub>n</sub> of F<sub>0</sub> and feature p<sub>0</sub> on F<sub>1</sub> is computed via dot product. Note that since p<sub>n</sub> is fractional, the corresponding values on F<sub>0</sub> must be interpolated. Bilinear interpolation was used:
+
+<img src="https://latex.codecogs.com/svg.image?f(F_0)_{p_n}=&space;\sum_q&space;G(p_n,q)\cdot&space;f(F_0)_q" title="f(F_0)_{p_n}= \sum_q G(p_n,q)\cdot f(F_0)_q" />
+
+where q are the locations on the feature map f(F<sub>0</sub>), and 
+
+<img src="https://latex.codecogs.com/png.image?\dpi{110}&space;G(p,&space;q)&space;=&space;\left\{\begin{matrix}\left(1&space;-&space;\abs{q_x&space;-&space;p_x}\right)&space;\cdot&space;\left(1&space;-&space;\abs{q_y&space;-&space;p_y}\right)&space;&&space;:\abs{q_x&space;-&space;p_x}&space;<&space;1&space;\vee&space;\abs{q_y&space;-&space;p_y}&space;<&space;1&space;\\0&space;&&space;:&space;\text{otherwise}&space;\\\end{matrix}\right" title="G(p, q) = \left\{\begin{matrix}\left(1 - \abs{q_x - p_x}\right) \cdot \left(1 - \abs{q_y - p_y}\right) & :\abs{q_x - p_x} < 1 \vee \abs{q_y - p_y} < 1 \\0 & : \text{otherwise} \\\end{matrix}\right" />
+
 
 # Results
 
