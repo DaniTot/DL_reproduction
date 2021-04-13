@@ -90,6 +90,8 @@ Learnable Spatio-Temporal Sampling (LSTS) is the heart of this architecture, and
 
 It takes two feature maps, F<sub>0</sub> and F<sub>1</sub>. N number of fractional sampling locations p<sub>n</sub> are randomly generated around each location of the feature map (where n = 1, 2, …, N). The number of channels of both feature maps is reduced from 1024 to 256 via the embedding function f, which is a single convolutional layer, with single stride, no padding, and a kernel size of 1. Then, for each location p<sub>0</sub> on the feature space F<sub>1</sub>, we repeat the following procedure:
 
+###### Similarity weights 
+
 The similarity s(p<sub>n</sub>) between features p<sub>n</sub> of F<sub>0</sub> and feature p<sub>0</sub> on F<sub>1</sub> is computed via dot product. Note that since p<sub>n</sub> is fractional, the corresponding values on F<sub>0</sub> must be interpolated. Bilinear interpolation was used:
 
 <img src="https://latex.codecogs.com/svg.image?f(F_0)_{p_n}=&space;\sum_q&space;G(p_n,q)\cdot&space;f(F_0)_q">
@@ -101,6 +103,8 @@ where q are the locations on the feature map f(F<sub>0</sub>), and
 Large positive products mean high similarity, and large negative products mean low similarity. We get the normalized weights S(p<sub>n</sub>), by normalizing s(p<sub>n</sub>) by the sum of its absolutes for each sampling location pn. The prediction for feature of F<sub>1</sub> at p<sub>0</sub> is calculated by aggregating the sampled features F<sub>1</sub>(p<sub>n</sub>) with the corresponding similarity weights:
 
 <img src="https://latex.codecogs.com/svg.image?F'_1(p_0)=&space;\sum_N&space;s(p_n)\cdot&space;f(F_0)_{p_n}">
+
+###### Backprop
 
 Gradient of (non-normalized) similarity weights at p_0: 
 
@@ -114,6 +118,8 @@ Note that F<sub>0</sub> and F<sub>1</sub> (and consequently f(F<sub>0</sub>) and
 
 In the updating phase, the sampling locations p_n are then offset based on the gradient and a scalar to magnify the offset:
 <img src="https://latex.codecogs.com/svg.image?p'_n=p_n&plus;s(p_n)&space;\text{\hspace{1cm}&space;for&space;}n=1,&space;2,&space;...,&space;N">
+
+###### Aggregation
 
 Once the above is calculated for each p<sub>0</sub>, we get the prediction F'<sub>1</sub>. F<sub>1</sub> and F'<sub>1</sub> are passed through a series of 3 convolutional layers (with shapes of  (3x3x256), (1x1x16), (1x1x1) respectively) and then a softmax, in order to produce the corresponding weights. The LSTS output is then
 
@@ -132,7 +138,8 @@ At this point, the program kept crashing, likely due to some kind of memory erro
 
 ## Results
 
-Show the results of our own implementation 
++ The weight generation and aggregation in LSTS is very. It is hypotised that this is due to our failure to vectorize many of the operations, which remained nested for loops.
++ Calculating the gradients in LSTS causes a memory error, that we were unable to fix by the time of submitting this paper
 
 
 ## Conclusion
