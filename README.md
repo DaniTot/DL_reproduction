@@ -163,6 +163,7 @@ non-existing, which made replicating significantly harder.
 Here comes the discussion of the paper.
 + Flaws of the original paper.
     + Many essentials steps/details are missing from the paper (i.e. the definition of the embedding function used).
+    + We suspect that LSTS is meant to be a type of transformer model, applied to the sequence of embeded featuers of video frames. In case it is indeed the case, this was not emphasized in the paper.
 + Flaws of the github.
     + Dependency list is missing.
     + Instructions and automated installer only work for Linux.
