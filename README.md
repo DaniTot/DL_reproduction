@@ -81,19 +81,53 @@ ResNet101
 
 # Own implementation
 
-Each frame is classified as a key or non-keyframe, with a fixed keyframe interval of 10, so every 10th frame is considered a keyframe, while all the rest are considered non-keyframes. We extract high-level features from the keyframes (via ResNet101), and low-level features from the non-keyframe (via ResNet101, up until Conv4_3).
+For the framework of our reproduction, we chose Python 3 with the PyTorch library. 
 
+Given a batch size, a number of videos from the ImageNet training set are selected randomly. Due to a limitation of our implementation, only videos with a resolution of 1280x720 can be processed. The frames are loaded one-by-one, and resized to 1000x562. Each frame is normalized, and classified as a key or non-keyframe, with a fixed keyframe interval of 10, so every 10th frame is considered a keyframe, while all the rest are considered non-keyframes. We extract high-level features from the keyframes (via ResNet101), and low-level features from the non-keyframe (via ResNet101, up until Conv4_3). The feature space from keyframes then have a shape of (1024, 18, 32), and the feature space from non-keyframes have a shape of (512, 71, 125).
+
+#### LSTS
 Learnable Spatio-Temporal Sampling (LSTS) is the heart of this architecture, and it works as follows:
 
 It takes two feature maps, F<sub>0</sub> and F<sub>1</sub>. N number of fractional sampling locations p<sub>n</sub> are randomly generated around each location of the feature map (where n = 1, 2, …, N). The number of channels of both feature maps is reduced from 1024 to 256 via the embedding function f, which is a single convolutional layer, with single stride, no padding, and a kernel size of 1. Then, for each location p<sub>0</sub> on the feature space F<sub>1</sub>, we repeat the following procedure:
 
 The similarity s(p<sub>n</sub>) between features p<sub>n</sub> of F<sub>0</sub> and feature p<sub>0</sub> on F<sub>1</sub> is computed via dot product. Note that since p<sub>n</sub> is fractional, the corresponding values on F<sub>0</sub> must be interpolated. Bilinear interpolation was used:
 
-<img src="https://latex.codecogs.com/svg.image?f(F_0)_{p_n}=&space;\sum_q&space;G(p_n,q)\cdot&space;f(F_0)_q" title="f(F_0)_{p_n}= \sum_q G(p_n,q)\cdot f(F_0)_q" />
+<img src="https://latex.codecogs.com/svg.image?f(F_0)_{p_n}=&space;\sum_q&space;G(p_n,q)\cdot&space;f(F_0)_q">
 
 where q are the locations on the feature map f(F<sub>0</sub>), and 
 
-<img src="https://latex.codecogs.com/png.image?\dpi{110}&space;G(p,&space;q)&space;=&space;\left\{\begin{matrix}\left(1&space;-&space;\abs{q_x&space;-&space;p_x}\right)&space;\cdot&space;\left(1&space;-&space;\abs{q_y&space;-&space;p_y}\right)&space;&&space;:\abs{q_x&space;-&space;p_x}&space;<&space;1&space;\vee&space;\abs{q_y&space;-&space;p_y}&space;<&space;1&space;\\0&space;&&space;:&space;\text{otherwise}&space;\\\end{matrix}\right" title="G(p, q) = \left\{\begin{matrix}\left(1 - \abs{q_x - p_x}\right) \cdot \left(1 - \abs{q_y - p_y}\right) & :\abs{q_x - p_x} < 1 \vee \abs{q_y - p_y} < 1 \\0 & : \text{otherwise} \\\end{matrix}\right" />
+<img src="https://github.com/DaniTot/DL_reproduction/blob/main/Images/G_eq.png" width="475">
+
+Large positive products mean high similarity, and large negative products mean low similarity. We get the normalized weights S(p<sub>n</sub>), by normalizing s(p<sub>n</sub>) by the sum of its absolutes for each sampling location pn. The prediction for feature of F<sub>1</sub> at p<sub>0</sub> is calculated by aggregating the sampled features F<sub>1</sub>(p<sub>n</sub>) with the corresponding similarity weights:
+
+<img src="https://latex.codecogs.com/svg.image?F'_1(p_0)=&space;\sum_N&space;s(p_n)\cdot&space;f(F_0)_{p_n}">
+
+Gradient of (non-normalized) similarity weights at p_0: 
+
+<img src="https://latex.codecogs.com/svg.image?\frac{\partial&space;s(p_n)}{\partial&space;p_n}=&space;\sum_q&space;\frac{\partial&space;G(p_n,q)}{\partial&space;p_n}\cdot&space;f(F_0)_q\cdot&space;f(F_1)_{p_0}">
+
+Note that F<sub>0</sub> and F<sub>1</sub> (and consequently f(F<sub>0</sub>) and f(F<sub>1</sub>)) are 2D feature spaces, so p<sub>n</sub> will have an x component, and a y component. Thus the derivative of the bilinear kernel will be:
+
+<img src="https://github.com/DaniTot/DL_reproduction/blob/main/Images/delta_G_x_eq.png" width="550">
+
+<img src="https://github.com/DaniTot/DL_reproduction/blob/main/Images/delta_G_y_eq.png" width="550">
+
+In the updating phase, the sampling locations p_n are then offset based on the gradient and a scalar to magnify the offset:
+<img src="https://latex.codecogs.com/svg.image?p'_n=p_n&plus;s(p_n)&space;\text{\hspace{1cm}&space;for&space;}n=1,&space;2,&space;...,&space;N">
+
+Once the above is calculated for each p<sub>0</sub>, we get the prediction F'<sub>1</sub>. F<sub>1</sub> and F'<sub>1</sub> are passed through a series of 3 convolutional layers (with shapes of  (3x3x256), (1x1x16), (1x1x1) respectively) and then a softmax, in order to produce the corresponding weights. The LSTS output is then
+
+<img src="https://latex.codecogs.com/svg.image?F_{out}=&space;W_1\circ&space;F_1&plus;W_{pred}\circ&space;F'_1">
+
+
+#### SRFU and DFA
+In the Sparsely Recursive Feature Updating (SRFU) a memory feature space F<sub>mem</sub> is created and updated with the LSTS output F<sub>out</sub> from each keyframe and the previous keyframe. This is done at every keyframe interval (10), when LSTS is ran with the new keyframe, and the previous keyframe from 10 frames before (i.e. F<sub>0</sub> is the feature space from the old keyframe, and F<sub>1</sub> is the feature space from the new keyframe). The memory feature space F<sub>mem</sub> is then updated with the output F<sub>out</sub>.
+
+In Dense Feature Aggregation the memory feature space is propageted to predict the next non-keyframe. This is achived by running the LSTS module with the most recent F<sub>mem</sub> and the low level features extracted from the non-keyframe. Note that the shape of the low level feature space will be different that of the high level one. Thus, it is first transformed with a series of three convolutional layers (with shapes (3x3x256), (3x3x512), (3x3x1024) respectively, and with ReLU operators in between), such that its shape would resemble that of the high-level feature space. And so, in LSTS, F<sub>0</sub> will be the memory feature space, and F<sub>1</sub> will be the transformed feature space from the non-keyframe.
+
+
+
+At this point, the program kept crashing, likely due to some kind of memory error in the gradient calculation. We were unable to find and fix the bug, and so we could not complete the reproduction. 
 
 
 # Results
