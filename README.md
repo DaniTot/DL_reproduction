@@ -2,7 +2,7 @@
 
 Written by Dani Tóth and Ruben van Oosterhoudt
 
-# Introduction 
+## Introduction 
 For the course Deep Learning at the Technical University of Delft we were given the task to replicate a 
 paper published in the field. This to create a better understanding in Deep Learning and gaining 
 experience in reproducing a paper. For the project we chose “Learning Where to Focus for Efficient 
@@ -16,7 +16,7 @@ Just a short introduction about the project and the paper.
 - figure 1 (visual abstract of the paper)
 - Few research
 
-# Original research paper
+## Original research paper
 
 Object detection becomes a more prominent aspect in our day to day live. With face recognition 
 for unlocking phones, ball tracking during a football match and autonomous driving. All of these 
@@ -36,7 +36,7 @@ This could be iterated to propagate across multiple frames. The High- and Low-fe
 by two proposed methods: Sparsely Recursive Feature Updating (SRFU) and Dense Feature Aggregation (DFA), 
 respectively. These methods will be discussed later. 
 
-# ImageNet VID
+## ImageNet VID
 
 ImageNet is a well known name within the machine learning community. With 14 million images, 
 at least 1 million bounding boxes and 20 thousand categories. The large amount of 
@@ -53,7 +53,7 @@ ImageVID/ImageNET
 - Benefits of the dataset
 
 
-# ResNet101
+## ResNet101
 
 Residual Networks, or ResNet for short, was introduced by researchers at MicroSoft Research 
 in 2015. This architecture tackled the problem with vanishing/exploding gradient caused by 
@@ -79,7 +79,7 @@ ResNet101
     - implement image for layer selection
 - complete for high level features
 
-# Own implementation
+## Own implementation
 
 For the framework of our reproduction, we chose Python 3 with the PyTorch library. 
 
@@ -130,7 +130,7 @@ In Dense Feature Aggregation the memory feature space is propageted to predict t
 At this point, the program kept crashing, likely due to some kind of memory error in the gradient calculation. We were unable to find and fix the bug, and so we could not complete the reproduction. 
 
 
-# Results
+## Results
 
 Show the results of our own implementation 
 
@@ -139,7 +139,7 @@ Show the results of our own implementation
 
 Here comes the conclusion of the paper
 
-# Discussion
+## Discussion
 
 In the introduction of the paper two terms are given: keyframe and non-keyframe. 
 With the naming we can figure out that the keyframe should be more important. 
@@ -154,15 +154,26 @@ interpretation of the code. Soon after this we found out that a lot of function 
 non-existing, which made replicating significantly harder. 
 
 Here comes the discussion of the paper.
--   Flaws of the original paper.
-    - Not all steps are clearly stated in the paper.
-    
--   Flaws of the github.
-    - Outdated function are used to do certain processes.
++ Flaws of the original paper.
+    + Many essentials steps/details are missing from the paper (i.e. the definition of the embedding function used).
++ Flaws of the github.
+    + Dependency list is missing.
+    + Instructions and automated installer only work for Linux.
+    + Windows installer is broken.
++ Discrepancies in the implementation details between the original paper, and their implementation:
+    + Low2high transformation convolution network: 
+        + code says: (1x1x256), (3x3x256), (3x3x1024)
+        + paper says: (3x3x256), (3x3x512), (3x3x1024)
+    + Quality network:
+        + code says: (3x3x256), (3x3x16), (3x3x1)
+        + paper says: (3x3x256), (1x1x16), (1x1x1)
+    + Similarity weight normalization:
+        + Code says: softmax
+        + Paper says: <img src="https://latex.codecogs.com/svg.image?S(p_n)=&space;\frac{s(p_n)}{\sum_N&space;s(p_n)}">
 
 
 
-# The machine learning reproducibility checklist
+## The machine learning reproducibility checklist
 
 for all models and algorithms presented, check that you include: 
 - A clear description of the mathematical setting, algorithm, and/or model.
