@@ -2,13 +2,13 @@
 
 Written by Dani Tóth and Ruben van Oosterhoudt
 
+![Figure 1](https://github.com/DaniTot/DL_reproduction/blob/main/Images/Network.jpg)
+
 ## Introduction 
 For the course Deep Learning at the Technical University of Delft we were given the task to replicate a 
 paper published in the field. This to create a better understanding in Deep Learning and gaining 
 experience in reproducing a paper. For the project we chose “Learning Where to Focus for Efficient 
 Video Object Detection” by Jiang et al.
-
-![Figure 1](https://github.com/DaniTot/DL_reproduction/blob/main/Images/Network.jpg)
 
 ## Original research paper
 
@@ -33,7 +33,7 @@ ImageNet is a well known name within the machine learning community. With 14 mil
 
 Residual Networks, or ResNet for short, was introduced by researchers at MicroSoft Research in 2015. This architecture tackled the problem with vanishing/exploding gradient caused by a large number of layers in convolutional neural networks (CNN) architectures. In ResNet, they implement a so-called skip connection which can skip a certain number of layers within the CNN. Implementing this skip connection it is possible to skip sections that have a negative influence on the performance. With this technique deeper CNNs could be created. In the paper the ResNet101 is used, ResNet is the architecture and 101 is the number of layers. ResNet is implemented to extract the feature maps from the images as stated in the introduction. For the High-Level features the complete ResNet will be used, while for Low-Level features only a part will be used. This cut-off point is notated as “Conv4_3” and can be determined with the figure shown below. During the reproduction a pre-trained ResNet101 from TorchVision is used for the feature extraction.
 
-![Figure 3](https://github.com/DaniTot/DL_reproduction/blob/main/Images/architecture_of_ResNet.png)
+![Figure 3](https://github.com/DaniTot/DL_reproduction/blob/main/Images/ResNET.png)
 
 ## Own implementation
 
