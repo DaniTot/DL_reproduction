@@ -18,23 +18,15 @@ Just a short introduction about the project and the paper.
 
 ## Original research paper
 
-Object detection becomes a more prominent aspect in our day to day live. With face recognition 
-for unlocking phones, ball tracking during a football match and autonomous driving. All of these 
-applications have one thing in common, motion. Motion decreases performance of object detection 
-because of occlusion, rare poses, and motion blur. To compensate this we need the temporal 
-information of the object. In earlier work optical flow is used to determine the temporal 
-information, but this has its limitations. Optical flow is time-consuming, with only 10 frames 
-per second (FPS). With the example of autonomous driving this could cause problems. 
+Object detection becomes a more prominent aspect in our day to day life. With examples like face recognition for unlocking phones, ball tracking during a football match and autonomous driving. All of these applications have one thing in common, motion. Motion decreases performance of object detection, in comparison to images, because of occlusion, rare poses, and motion blur. To compensate for this we need the temporal information of the object. In earlier work optical flow is used to determine the temporal information, but this has its limitations. Optical flow is time-consuming, with only 10 frames per second (FPS). With the example of autonomous driving this could cause problems.
+To tackle this problem Dense Feature Aggregation, DFA for short, is introduced to determine objects in videos. The writers proposed a technique where feature maps are aggregated with the help of flow fields. They take a random image I<sub>i</sub> and its neighbour I<sub>j</sub>. With these images they can create a flow field using a flow network. This indicates the flow between the images. From I<sub>j</sub> they create a feature map F<sub>j</sub>. A bilinear warping function is applied on the flow field and a feature map to create feature maps warped from frame j to frame i. Dense aggregation is adding all the warped feature maps with a calculated weight factor to create an aggregated feature map. This could then be used to detect objects within the frame with for example blur.
+Sparse Recursive Feature Updating, SRFU for short, is an improvement to DFA. Because DFA uses all the images of the video it is relatively slow. The paper proposes to only take the keyframes into account. Keyframes are recursive with an interval of 10. The information from the current keyframe features aggregates with the old keyframe, which holds all information of the previous keyframe, and propagates to the next keyframe.
 
-So, the writer of the paper introduced, Learnable Spatio-Temporal Sampling (LSTS) to tackle this 
-problem. With this approach high-level features will be propagated across frames to predict the 
-location. By sampling specific location from the feature maps F<sub>t</sub> and F<sub>t+k</sub>, 
-which are extracted from I<sub>t</sub>, and I<sub>t+k</sub>. Where I<sub>t</sub> is the current frame, 
-and I<sub>t+k</sub> is the next frame. Then, similarities between feature maps will be used to determine 
-weights needed for propagating between F<sub>t</sub> and F<sub>t+k</sub> to produce an F’<sub>t+k</sub>. 
-This could be iterated to propagate across multiple frames. The High- and Low-feature maps are enhanced 
-by two proposed methods: Sparsely Recursive Feature Updating (SRFU) and Dense Feature Aggregation (DFA), 
-respectively. These methods will be discussed later. 
+In the paper “Deep Feature Flow for Video Recognition” from Zhu et al they proposed the principles of keyframes. Here they state that a keyframe can be seen as a starting frame. With a non-keyframe being, in case of this paper, the next frame in the video. When a feature map is created of both frames the translation of the object of interest could be determined. The paper states that the keyframe should be changed in regular intervals to increase accuracy and speed. For the ImageNet VID dataset they set this interval on 10, the same as what is stated in the code.
+
+So, the writer of the paper introduced Learnable Spatio-Temporal Sampling (LSTS) to tackle this problem. LSTS will replace relatively long calculation times of the flow fields with predicting the next frame with learned weights within DFA and SRFU. The structure is shown in figure 1. The features F<sub>t</sub> and F<sub>t+k</sub> will be extracted from current image, I<sub>t</sub>, and the next image, I<sub>t+k</sub>. A point is taken from F<sub>t+k</sub> and will be compared to the surrounding points in F<sub>t</sub>, as shown in figure 2. By similarity comparison, between the point and the surrounding, the affinity weights could be calculated. This weight displays the flow between the current and the previous weight. With the weights and F<sub>t</sub> the predicted F’<sub>t+k</sub> could be calculated. This can then be propagated through training and returns an improved surrounding needed to predict F’<sub>t+k</sub>. If the network is trained it could increase FPS and accuracy.
+The architecture is implemented in Python 2, with the MXNet library.
+
 
 ## ImageNet VID
 
