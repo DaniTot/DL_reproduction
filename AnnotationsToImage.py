@@ -67,7 +67,7 @@ def load_annotations(path):
 
     return gt_boxes
 
-def Picture_Annotation(path, gt_boxes, name):
+def Picture_Annotation(path, gt_boxes, name, images):
     im = Image.open(path)
 
     if gt_boxes.size == 0:
@@ -94,7 +94,7 @@ def Picture_Annotation(path, gt_boxes, name):
     ax.xaxis.set_major_locator(ticker.NullLocator())
     ax.yaxis.set_major_locator(ticker.NullLocator())
 
-    SavePath = "/Users/thomaswendt/Desktop/Ruben/TU Delft BME 31-3/TU Delft BME/CS4240 Deep Learning/Duo Project/ILSVRC2015_train_00250015/Save/"
+    SavePath = "/Users/thomaswendt/Desktop/Ruben/TU Delft BME 31-3/TU Delft BME/CS4240 Deep Learning/Duo Project/ImageNetSamples/ILSVRC2015_train_00250015/Save/"
 
 
     plt.savefig(SavePath + name)
@@ -103,8 +103,10 @@ def MakePath():
     os.path.expanduser('~/ILSVRC2015/')
 
     return AnnotationPath, PicturePath
+
+
 ## Path --> needs to be changed.
-shared_path = "/Users/thomaswendt/Desktop/Ruben/TU Delft BME 31-3/TU Delft BME/CS4240 Deep Learning/Duo Project/ILSVRC2015_train_00250015"
+shared_path = "/Users/thomaswendt/Desktop/Ruben/TU Delft BME 31-3/TU Delft BME/CS4240 Deep Learning/Duo Project/ImageNetSamples/ILSVRC2015_train_00250015"
 AnnotationPath = shared_path + "/Annotations/"
 PicturePath = shared_path + "/Images/"
 

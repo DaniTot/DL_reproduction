@@ -38,46 +38,15 @@ respectively. These methods will be discussed later.
 
 ## ImageNet VID
 
-ImageNet is a well known name within the machine learning community. With 14 million images, 
-at least 1 million bounding boxes and 20 thousand categories. The large amount of 
-data results in a wide variety of applications. For the paper they use a similar dataset, 
-ImageNet VID. The images are replaced by 3862 training videos, 30 object 
-categories and boundary boxes. Examples are shown in figure ???. Because of storage restricting 
-during reproducibility project a training set of 1910 training videos is used.
+ImageNet is a well known name within the machine learning community. With 14 million images, at least 1 million bounding boxes and 20 thousand categories. The large amount of data results in a wide variety of applications. For the paper they use a similar dataset, ImageNet VID. The images are replaced by 3862 training videos, 30 object categories and boundary boxes. Because of storage restrictions during the reproducibility project a training set of 1910 training videos is used. 
 
-ImageVID/ImageNET
-- What is the dataset made off?
-    - Classes
-    - Annotations
-- Where is it originated from
-- Benefits of the dataset
-
+![Figure 3](https://github.com/DaniTot/DL_reproduction/blob/main/Images/ExampleImages.jpg)
 
 ## ResNet101
 
-Residual Networks, or ResNet for short, was introduced by researchers at MicroSoft Research 
-in 2015. This architecture tackled the problem with vanishing/exploding gradient caused by 
-large number of layers in convolutional neural networks (CNN) architectures. In ResNet, they 
-implement a so-called skip connection which can skip a certain number of layers within the 
-CNN. Implementing this skip connection it is possible to skip sections that have a negative 
-influence on the performance. With this technique deeper CNNs could be created. In the paper 
-the ResNet101 is used, ResNet is the architecture and 101 are the number of layers. ResNet 
-is implemented to extract the feature maps from the images a stated in the introduction. For 
-the High-Level features the complete ResNet will be used, while for Low-Level features only 
-a part will be used. This cut-off point is notated as “Conv4_3” and can be determined with 
-the figure shown below. During the reproduction a pre-trained ResNet101 from TorchVision is used for the 
-feature extraction.
+Residual Networks, or ResNet for short, was introduced by researchers at MicroSoft Research in 2015. This architecture tackled the problem with vanishing/exploding gradient caused by a large number of layers in convolutional neural networks (CNN) architectures. In ResNet, they implement a so-called skip connection which can skip a certain number of layers within the CNN. Implementing this skip connection it is possible to skip sections that have a negative influence on the performance. With this technique deeper CNNs could be created. In the paper the ResNet101 is used, ResNet is the architecture and 101 is the number of layers. ResNet is implemented to extract the feature maps from the images as stated in the introduction. For the High-Level features the complete ResNet will be used, while for Low-Level features only a part will be used. This cut-off point is notated as “Conv4_3” and can be determined with the figure shown below. During the reproduction a pre-trained ResNet101 from TorchVision is used for the feature extraction.
 
 ![Figure 3](https://github.com/DaniTot/DL_reproduction/blob/main/Images/architecture_of_ResNet.png)
-
-
-
-ResNet101
-- goal of ResNET
-- pretrained model
-- till layer 50 for low level features
-    - implement image for layer selection
-- complete for high level features
 
 ## Own implementation
 
