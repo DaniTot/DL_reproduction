@@ -8,18 +8,20 @@ Written by Dani Tóth and Ruben van Oosterhoudt
 For the course Deep Learning at the Technical University of Delft we were given the task to replicate a 
 paper published in the field. This to create a better understanding in Deep Learning and gaining 
 experience in reproducing a paper. For the project we chose “Learning Where to Focus for Efficient 
-Video Object Detection” by Jiang et al.
+Video Object Detection” by Jiang et al [[1](https://arxiv.org/abs/1911.05253)].
 
 ## Original research paper
 
 Object detection becomes a more prominent aspect in our day to day life. With examples like face recognition for unlocking phones, ball tracking during a football match and autonomous driving. All of these applications have one thing in common, motion. Motion decreases performance of object detection, in comparison to images, because of occlusion, rare poses, and motion blur. To compensate for this we need the temporal information of the object. In earlier work optical flow is used to determine the temporal information, but this has its limitations. Optical flow is time-consuming, with only 10 frames per second (FPS). With the example of autonomous driving this could cause problems.
 
-To tackle this problem Dense Feature Aggregation, DFA for short, is introduced to determine objects in videos. The writers proposed a technique where feature maps are aggregated with the help of flow fields. They take a random image I<sub>i</sub> and its neighbour I<sub>j</sub>. With these images they can create a flow field using a flow network. This indicates the flow between the images. From I<sub>j</sub> they create a feature map F<sub>j</sub>. A bilinear warping function is applied on the flow field and a feature map to create feature maps warped from frame j to frame i. Dense aggregation is adding all the warped feature maps with a calculated weight factor to create an aggregated feature map. This could then be used to detect objects within the frame with for example blur.
-Sparse Recursive Feature Updating, SRFU for short, is an improvement to DFA. Because DFA uses all the images of the video it is relatively slow. The paper proposes to only take the keyframes into account. Keyframes are recursive with an interval of 10. The information from the current keyframe features aggregates with the old keyframe, which holds all information of the previous keyframe, and propagates to the next keyframe.
+To tackle this problem Dense Feature Aggregation, DFA for short, is introduced to determine objects in videos [[2](https://arxiv.org/abs/1703.10025)]. The writers proposed a technique where feature maps are aggregated with the help of flow fields. They take a random image I<sub>i</sub> and its neighbour I<sub>j</sub>. With these images they can create a flow field using a flow network. This indicates the flow between the images. From I<sub>j</sub> they create a feature map F<sub>j</sub>. A bilinear warping function is applied on the flow field and a feature map to create feature maps warped from frame j to frame i. Dense aggregation is adding all the warped feature maps with a calculated weight factor to create an aggregated feature map. This could then be used to detect objects within the frame with for example blur.
 
-In the paper “Deep Feature Flow for Video Recognition” from Zhu et al they proposed the principles of keyframes. Here they state that a keyframe can be seen as a starting frame. With a non-keyframe being, in case of this paper, the next frame in the video. When a feature map is created of both frames the translation of the object of interest could be determined. The paper states that the keyframe should be changed in regular intervals to increase accuracy and speed. For the ImageNet VID dataset they set this interval on 10, the same as what is stated in the code.
+Sparse Recursive Feature Updating, SRFU for short, is an improvement to DFA [[3](https://arxiv.org/abs/1711.11577)]. Because DFA uses all the images of the video it is relatively slow. The paper proposes to only take the keyframes into account. Keyframes are recursive with an interval of 10. The information from the current keyframe features aggregates with the old keyframe, which holds all information of the previous keyframe, and propagates to the next keyframe.
+
+In the paper “Deep Feature Flow for Video Recognition” from Zhu et al [[4](https://arxiv.org/abs/1611.07715v2)]. they proposed the principles of keyframes. Here they state that a keyframe can be seen as a starting frame. With a non-keyframe being, in case of this paper, the next frame in the video. When a feature map is created of both frames the translation of the object of interest could be determined. The paper states that the keyframe should be changed in regular intervals to increase accuracy and speed. For the ImageNet VID dataset they set this interval on 10, the same as what is stated in the code.
 
 So, the writer of the paper introduced Learnable Spatio-Temporal Sampling (LSTS) to tackle this problem. LSTS will replace relatively long calculation times of the flow fields with predicting the next frame with learned weights within DFA and SRFU. The structure is shown in figure 1. The features F<sub>t</sub> and F<sub>t+k</sub> will be extracted from current image, I<sub>t</sub>, and the next image, I<sub>t+k</sub>. A point is taken from F<sub>t+k</sub> and will be compared to the surrounding points in F<sub>t</sub>, as shown in figure 2. By similarity comparison, between the point and the surrounding, the affinity weights could be calculated. This weight displays the flow between the current and the previous weight. With the weights and F<sub>t</sub> the predicted F’<sub>t+k</sub> could be calculated. This can then be propagated through training and returns an improved surrounding needed to predict F’<sub>t+k</sub>. If the network is trained it could increase FPS and accuracy.
+
 The architecture is implemented in Python 2, with the MXNet library.
 
 
@@ -106,17 +108,14 @@ Here comes the conclusion of the paper
 
 ## Discussion
 
-In the introduction of the paper two terms are given: keyframe and non-keyframe. 
-With the naming we can figure out that the keyframe should be more important. 
-But the question still stands, why is that specific frame more important. 
-And after looking in the code became clear that a keyframe is every tenth frame, and the 
-rest are non-keyframes.
+We started this paper by introducing the reason behind this blogpost, looking how much we could reproduce given the information of the paper. During the reproduction we came across some problems that are noteworthy: missing explanations, outdated code and discrepancies between code and the paper.
 
-During starting phase of our project we tried running the original GitHub code to have a better understanding 
-of the structure. With the given Windows and Linux installer we couldn’t figure out how to make the code run. 
-After this setback we started replication the complete code of the GitHub and tried to make a personal 
-interpretation of the code. Soon after this we found out that a lot of function used are outdated or even 
-non-existing, which made replicating significantly harder. 
+An example of missing a proper explanation are the concepts of keyframe and non-keyframe. With the naming we could figure out that keyframe is superior to a non-keyframe, but what makes this difference? With the code it became clear that a keyframe happens once every 10 frames. Which only raised more questions, why 10? After reading several other papers it became clear that the keyframes and non-keyframe were used for SRFU and DFA to reduce the number of aggregations and so reduce computation. The number 10 is found as an optimal for ImageNet by a empirical study.
+
+Our first step of reproducing was installing and running the code linked to the paper. With the given Windows and Linux installer we couldn't figure out how to make this work. After this setback and communication with the other groups with the same paper we made the decision to make a personal interpretation of the code. During the replication process we found out that a lot of the functions used were outdated or custom made by the author. Without much prior knowledge in coding, in what we thought was C, we couldn't replicate these functions.
+
+During the reproduction with the code we came across a few discrepancies between the original paper, and their implementation. Two convolution networks that we replicated, Low2High and Quality network, had discrepancies in their layers. For example, the Low2High network code states that the should exist out of 3 layers: (1x1x256), (3x3x256) and (3x3x1024). While the paper says that it should be (3x3x256), (3x3x512), (3x3x1024). Also functions that were stated in paper and code deviated from each other. Example is the similarity weight normalization we found in the code. Where they use the softmax function, while the paper says S(pn) = s(pn)/n=1Ns(pn). These relatively small differences made it difficult to check whether we were doing the right thing. 
+
 
 Here comes the discussion of the paper.
 + Flaws of the original paper.
@@ -137,6 +136,15 @@ Here comes the discussion of the paper.
         + Code says: softmax
         + Paper says: <img src="https://latex.codecogs.com/svg.image?S(p_n)=&space;\frac{s(p_n)}{\sum_N&space;s(p_n)}">
 
+## References
+
+1] ["Learning Where to Focus for Efficient Video Object Detection" by Jiang et al.](https://arxiv.org/abs/1911.05253)
+
+2] [“Flow-Guided Feature Aggregation for Video Object Detection” by Zhu et al.](https://arxiv.org/abs/1703.10025)
+
+3] [“Towards High Performance Video Object Detection” from Zhu et al.](https://arxiv.org/abs/1711.11577)
+
+4] [“Deep Feature Flow for Video Recognition” from Zhu et al](https://arxiv.org/abs/1611.07715v2)
 
 
 ## The machine learning reproducibility checklist
