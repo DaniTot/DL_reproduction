@@ -27,6 +27,8 @@ The architecture is implemented in Python 2, with the MXNet library.
 
 ImageNet is a well known name within the machine learning community. With 14 million images, at least 1 million bounding boxes and 20 thousand categories. The large amount of data results in a wide variety of applications. For the paper they use a similar dataset, ImageNet VID. The images are replaced by 3862 training videos, 30 object categories and boundary boxes. Because of storage restrictions during the reproducibility project a training set of 1910 training videos is used. 
 
+To demonstrate the problem of video object recognition, we took some frames of the dataset. In figure 2a and 2b we see that the objects are obstructed by being partially out of the frame and being obstructed by several trees. Both figure 2c and 2d are showing motion blur caused by moving of the camera or object of interest respectively. These images are examples of problematic images during object recognition.
+
 ![Figure 2](https://github.com/DaniTot/DL_reproduction/blob/main/Images/ExampleImages.jpg)
 
 ## ResNet101
