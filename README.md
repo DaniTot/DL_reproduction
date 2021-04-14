@@ -114,7 +114,11 @@ An example of missing a proper explanation are the concepts of keyframe and non-
 
 Our first step of reproducing was installing and running the code linked to the paper. With the given Windows and Linux installer we couldn't figure out how to make this work. After this setback and communication with the other groups with the same paper we made the decision to make a personal interpretation of the code. During the replication process we found out that a lot of the functions used were outdated or custom made by the author. Without much prior knowledge in coding, in what we thought was C, we couldn't replicate these functions.
 
-During the reproduction with the code we came across a few discrepancies between the original paper, and their implementation. Two convolution networks that we replicated, Low2High and Quality network, had discrepancies in their layers. For example, the Low2High network code states that the should exist out of 3 layers: (1x1x256), (3x3x256) and (3x3x1024). While the paper says that it should be (3x3x256), (3x3x512), (3x3x1024). Also functions that were stated in paper and code deviated from each other. Example is the similarity weight normalization we found in the code. Where they use the softmax function, while the paper says <img src="https://latex.codecogs.com/svg.image?S(p_n)=&space;\frac{s(p_n)}{\sum_N&space;s(p_n)}">. These relatively small differences made it difficult to check whether we were doing the right thing. 
+During the reproduction with the code we came across a few discrepancies between the original paper, and their implementation. Two convolution networks that we replicated, Low2High and Quality network, had discrepancies in their layers. For example, the Low2High network code states that the should exist out of 3 layers: (1x1x256), (3x3x256) and (3x3x1024). While the paper says that it should be (3x3x256), (3x3x512), (3x3x1024). Also functions that were stated in paper and code deviated from each other. Example is the similarity weight normalization we found in the code. Where they use the softmax function, while the paper says 
+
+<img src="https://latex.codecogs.com/svg.image?S(p_n)=&space;\frac{s(p_n)}{\sum_N&space;s(p_n)}"> 
+
+These relatively small differences made it difficult to check whether we were doing the right thing. 
 
 
 Here comes the discussion of the paper.
