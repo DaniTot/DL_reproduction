@@ -8,13 +8,7 @@ paper published in the field. This to create a better understanding in Deep Lear
 experience in reproducing a paper. For the project we chose “Learning Where to Focus for Efficient 
 Video Object Detection” by Jiang et al.
 
-Just a short introduction about the project and the paper.
-
-- Motivation and scope
-- No generic first sentence
-- 3 contributions
-- figure 1 (visual abstract of the paper)
-- Few research
+![Figure 1](https://github.com/DaniTot/DL_reproduction/blob/main/Images/Network.jpg)
 
 ## Original research paper
 
@@ -33,7 +27,7 @@ The architecture is implemented in Python 2, with the MXNet library.
 
 ImageNet is a well known name within the machine learning community. With 14 million images, at least 1 million bounding boxes and 20 thousand categories. The large amount of data results in a wide variety of applications. For the paper they use a similar dataset, ImageNet VID. The images are replaced by 3862 training videos, 30 object categories and boundary boxes. Because of storage restrictions during the reproducibility project a training set of 1910 training videos is used. 
 
-![Figure 3](https://github.com/DaniTot/DL_reproduction/blob/main/Images/ExampleImages.jpg)
+![Figure 2](https://github.com/DaniTot/DL_reproduction/blob/main/Images/ExampleImages.jpg)
 
 ## ResNet101
 
