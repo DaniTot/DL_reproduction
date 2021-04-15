@@ -103,7 +103,11 @@ At this point, the program kept crashing, likely due to some kind of memory erro
 
 ## Conclusion
 
-Here comes the conclusion of the paper
+Is the paper reproducible? With the effort we put into the project, I can confidently say that the answer for us is no. With a lot of setbacks during the start of the project with errors in the installers, unclear descriptions and missing hyperparameters it wasn’t an easy task. These points made it clear for us how important it is to make a paper readable. During the reproduction process we also learned a lot about deep learning itself and how to approach similar projects in the future.
+
+## Acknowledgements
+
+We would like to thank Xin Liu for the helpful discussion that helped us overcome obstacles during the project!
 
 ## Discussion
 
