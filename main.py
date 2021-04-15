@@ -7,10 +7,14 @@ import numpy as np
 import os
 import cv2
 import numpy as np
+import time
+
+from collections import Counter
+import tracemalloc
 
 from FeatureExtractor import FeatureExtractor
 from LSTS import Agg_LSTS, Com_LSTS
-# from LSTS2 import Agg_LSTS, Com_LSTS
+from MemProfile import display_top
 
 
 class Train:
@@ -47,6 +51,9 @@ class Train:
         self.FeEx = FeatureExtractor()
         self.LSTS = Com_LSTS([1, 1024, 18, 32])
 
+        self.times = [time.time()]
+        self.time = time.time()
+
     def batch_randomizer(self):
         # count how many datasets we have
         mp4_count = 0
@@ -68,9 +75,10 @@ class Train:
             frame_path = os.path.join(self.mp4_path, os.fsdecode(frame_lst[0]))
             frame = cv2.imread(frame_path)
             if frame.shape[0] == self.aspect_ratio[1] and frame.shape[1] == self.aspect_ratio[0]:
+                # print("aspects", frame.shape, self.aspect_ratio)
                 break
             else:
-                print("aspects", frame.shape, self.aspect_ratio)
+                # print("aspects", frame.shape, self.aspect_ratio)
                 add_count = 1
                 while self.batch_data_idx[self.iteration_count] + add_count in self.batch_data_idx:
                     add_count += 1
@@ -82,12 +90,12 @@ class Train:
         directory = os.fsencode(self.mp4_path)
         frame_lst = os.listdir(directory)
         frame_path = os.path.join(self.mp4_path, os.fsdecode(frame_lst[self.frame_count]))
-
+        print(frame_path)
         if os.path.isfile(frame_path):
             # new_frame = Image.open(frame_path)
             frame = cv2.imread(frame_path)
             self.new_frame, self.new_scale = self.resize(frame, self.SCALES[0], self.SCALES[1], stride=0)
-
+            # print("resized", self.new_frame.shape, self.new_scale)
             self.frame_count += 1
             return True
 
@@ -134,13 +142,20 @@ class Train:
             self.select_vid()
             while True:
                 if self.load_frame():
-                    print(self.mp4_path)
+                    print("Randomize batch, Select vid, Load frame--- %s seconds ---" % (time.time() - self.time))
+                    self.time = time.time()
                     # Get thefeature vectors from the new frame
                     # SRFU segment
                     if self.iteration_count % self.key_frame_interval == 0:
                         key_frame = True
                         conv_feat_oldkey, conv_feat_newkey, feature_low_level = self.FeEx.get_feature(self.new_frame,
                                                                                                       key_frame)
+                        print("Extract features--- %s seconds ---" % (time.time() - self.time))
+                        self.time = time.time()
+                        # snapshot = tracemalloc.take_snapshot()
+                        # display_top(snapshot)
+                        print()
+                        # print("shapes", conv_feat_oldkey.shape, conv_feat_newkey.shape, feature_low_level.shape)
                         # print(conv_feat_oldkey.shape, conv_feat_newkey.shape, feature_low_level.shape)
                         ret = self.LSTS.get_input(conv_feat_oldkey, conv_feat_newkey)
                         if ret == 0:
@@ -150,7 +165,12 @@ class Train:
                         else:
                             # self.LSTS.WeightGenerate()
                             # self.LSTS.Aggregate()
-                            self.LSTS.DoImage(weight=True, aggregate=True, gradients=True, update=True)
+                            self.LSTS.DoImage(weight=True, aggregate=True, gradients=True, update=False)
+                            print("Wights+Aggregate--- %s seconds ---" % (time.time() - self.time))
+                            self.time = time.time()
+                            # snapshot = tracemalloc.take_snapshot()
+                            # display_top(snapshot)
+                            print()
                             assert False
                             F_out = self.LSTS.quality_network(self.LSTS.F_1, self.LSTS.F_pred, key_frame)
                             self.LSTS.DoImage(weight=False, aggregate=False, gradients=False, update=True)
@@ -175,6 +195,7 @@ class Train:
                 else:
                     break
 
+# tracemalloc.start()
 
 Tr = Train(1, "Daniel")
 Tr.get_feature()
