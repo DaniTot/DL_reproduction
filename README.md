@@ -97,8 +97,11 @@ At this point, the program kept crashing, likely due to some kind of memory erro
 
 ## Results
 
+As mentioned previously, we were unable to port the original implementation to PyTorch, and so we don't have results to compare with the ones in the paper either. During our attempts at debugging, we recorded some performance data that we can share. These were measured via the time and the tracemalloc Python libraries, on an ASUS laptop with AMD Ryzen 5 4600H on 3.00GHz, with NVIDIA GeForce GTX 1650 and 8GB RAM. The installed PyTorch is of version 1.8.1, with CUDA 11.2.
+
+The weight generation and aggregation in LSTS is very slow. The total runtime for a single frame is 326.193 seconds, from which the batch randomization, video selection, and loading a frame takes 0.119 seconds, the low and high level feature extraction takes 11.12 seconds, and the weight generation and aggregation stages in LSTS take 314.95 seconds. It is hypotised that this is due to our failure to vectorize many of the operations, which remained nested for loops. The finction allocating the most memory is the OpenCV that loads the video frame. The memory usage of the program never exceeds 4.5MB during its runtime.
+
 + The weight generation and aggregation in LSTS is very. It is hypotised that this is due to our failure to vectorize many of the operations, which remained nested for loops.
-+ Calculating the gradients in LSTS causes a memory error, that we were unable to fix by the time of submitting this paper
 
 
 ## Conclusion
@@ -138,50 +141,3 @@ The paper from Edward Raff showed the most relevant factors for a reproducible p
 5] [“Deep Feature Flow for Video Recognition” from Zhu et al](https://arxiv.org/abs/1611.07715v2)
 
 6] [“Deformable Convolutional Networks” from Dai et al](https://arxiv.org/abs/1703.06211)
-
-
-## The machine learning reproducibility checklist
-
-for all models and algorithms presented, check that you include: 
-- A clear description of the mathematical setting, algorithm, and/or model.
-- An analysis of the complexity (time, space, sample size) of any algorithm.
-- A link to a downloadable source code with specification of all dependencies, including external libraries.
-
-for any theoretical claim, check that you include:
-- A statement of the result
-- A clear explanation of each assumption
-- A complete proof of the claim
-
-for all figures and tables that present empirical results, check that you include:
-- A complete description of the data collection process, including sample size.
-- A link to a downloadable version of the data set or simulation environment.
-- An explanation of any data that was excluded and a description of any preprocessing step.
-- An explanation of how samples were allocated for training, validation, and testing.
-- The range of hyperparameters considered, method to select the best hyperparameter configuration, and specification of each hyperparameter used to generate results.
-- The exact number of evaluations runs.
-- A description of how experiments were run.
-- A clear definition of the specific measure or statistics used to report results.
-- Clearly defined error bars. 
-- A description of results with central tendency (e.g., mean) and variation (e.g., stddev).
-- A description of the computing infrastructure used.
-
-## Information of Discussion 
-
-Here comes the discussion of the paper.
-+ Flaws of the original paper.
-    + Many essentials steps/details are missing from the paper (i.e. the definition of the embedding function used).
-    + We suspect that LSTS is meant to be a type of transformer model, applied to the sequence of embeded featuers of video frames. In case it is indeed the case, this was not emphasized in the paper.
-+ Flaws of the github.
-    + Dependency list is missing.
-    + Instructions and automated installer only work for Linux.
-    + Windows installer is broken.
-+ Discrepancies in the implementation details between the original paper, and their implementation:
-    + Low2high transformation convolution network: 
-        + code says: (1x1x256), (3x3x256), (3x3x1024)
-        + paper says: (3x3x256), (3x3x512), (3x3x1024)
-    + Quality network:
-        + code says: (3x3x256), (3x3x16), (3x3x1)
-        + paper says: (3x3x256), (1x1x16), (1x1x1)
-    + Similarity weight normalization:
-        + Code says: softmax
-        + Paper says: <img src="https://latex.codecogs.com/svg.image?S(p_n)=&space;\frac{s(p_n)}{\sum_N&space;s(p_n)}">
