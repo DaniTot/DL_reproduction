@@ -5,6 +5,10 @@ import sys
 import gc
 import itertools
 
+from collections import Counter
+import tracemalloc
+from MemProfile import display_top
+
 class Com_LSTS():
     def __init__(self, In_Shape, N=5):
         # self.weight_SRFU = torch.rand(In_Shape)
@@ -54,6 +58,8 @@ class Com_LSTS():
             torch.nn.Conv2d(in_channels=256, out_channels=16, kernel_size=1, padding=1),
             torch.nn.Conv2d(in_channels=16, out_channels=1, kernel_size=1, padding=1)
         )
+
+        tracemalloc.start()
 
         print('Initialization done!')
 
@@ -200,6 +206,7 @@ class Com_LSTS():
 
                 if update:
                     self.update()
+
         print("DONE!")
         return
 
@@ -263,6 +270,11 @@ class Com_LSTS():
                                                      self.F_1_embedded[0, :, self.p_0[0], self.p_0[1]])
                 self.grad[pi, pj, n, 1] += torch.dot((G_grad[1] * self.F_0_embedded[0, :, qi, qj]),
                                                      self.F_1_embedded[0, :, self.p_0[0], self.p_0[1]])
+        snapshot = tracemalloc.take_snapshot()
+        display_top(snapshot)
+        current, peak = tracemalloc.get_traced_memory()
+        print(f"Current memory usage is {current / 10 ** 6}MB; Peak was {peak / 10 ** 6}MB")
+        print()
         return
 
     def update(self, lr=0.1):
