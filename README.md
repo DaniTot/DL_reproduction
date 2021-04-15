@@ -6,19 +6,18 @@ Written by Dani Tóth and Ruben van Oosterhoudt
 
 ## Introduction 
 For the course Deep Learning at the Technical University of Delft we were given the task to replicate a 
-paper published in the field. This to create a better understanding in Deep Learning and gaining 
-experience in reproducing a paper. For the project we chose “Learning Where to Focus for Efficient 
-Video Object Detection” by Jiang et al [[1](https://arxiv.org/abs/1911.05253)].
+paper published in the field. This to create a better understanding in Deep Learning, gaining experience in reproducing a paper and comparing personal experience to the paper of Edward Raff [[1](https://arxiv.org/abs/1909.06674)]. For the project we chose “Learning Where to Focus for Efficient 
+Video Object Detection” by Jiang et al [[2](https://arxiv.org/abs/1911.05253)].
 
 ## Original research paper
 
 Object detection becomes a more prominent aspect in our day to day life. With examples like face recognition for unlocking phones, ball tracking during a football match and autonomous driving. All of these applications have one thing in common, motion. Motion decreases performance of object detection, in comparison to images, because of occlusion, rare poses, and motion blur. To compensate for this we need the temporal information of the object. In earlier work optical flow is used to determine the temporal information, but this has its limitations. Optical flow is time-consuming, with only 10 frames per second (FPS). With the example of autonomous driving this could cause problems.
 
-To tackle this problem Dense Feature Aggregation, DFA for short, is introduced to determine objects in videos [[2](https://arxiv.org/abs/1703.10025)]. The writers proposed a technique where feature maps are aggregated with the help of flow fields. They take a random image I<sub>i</sub> and its neighbour I<sub>j</sub>. With these images they can create a flow field using a flow network. This indicates the flow between the images. From I<sub>j</sub> they create a feature map F<sub>j</sub>. A bilinear warping function is applied on the flow field and a feature map to create feature maps warped from frame j to frame i. Dense aggregation is adding all the warped feature maps with a calculated weight factor to create an aggregated feature map. This could then be used to detect objects within the frame with for example blur.
+To tackle this problem Dense Feature Aggregation, DFA for short, is introduced to determine objects in videos [[3](https://arxiv.org/abs/1703.10025)]. The writers proposed a technique where feature maps are aggregated with the help of flow fields. They take a random image I<sub>i</sub> and its neighbour I<sub>j</sub>. With these images they can create a flow field using a flow network. This indicates the flow between the images. From I<sub>j</sub> they create a feature map F<sub>j</sub>. A bilinear warping function is applied on the flow field and a feature map to create feature maps warped from frame j to frame i. Dense aggregation is adding all the warped feature maps with a calculated weight factor to create an aggregated feature map. This could then be used to detect objects within the frame with for example blur.
 
-Sparse Recursive Feature Updating, SRFU for short, is an improvement to DFA [[3](https://arxiv.org/abs/1711.11577)]. Because DFA uses all the images of the video it is relatively slow. The paper proposes to only take the keyframes into account. Keyframes are recursive with an interval of 10. The information from the current keyframe features aggregates with the old keyframe, which holds all information of the previous keyframe, and propagates to the next keyframe.
+Sparse Recursive Feature Updating, SRFU for short, is an improvement to DFA [[4](https://arxiv.org/abs/1711.11577)]. Because DFA uses all the images of the video it is relatively slow. The paper proposes to only take the keyframes into account. Keyframes are recursive with an interval of 10. The information from the current keyframe features aggregates with the old keyframe, which holds all information of the previous keyframe, and propagates to the next keyframe.
 
-In the paper “Deep Feature Flow for Video Recognition” from Zhu et al [[4](https://arxiv.org/abs/1611.07715v2)]. they proposed the principles of keyframes. Here they state that a keyframe can be seen as a starting frame. With a non-keyframe being, in case of this paper, the next frame in the video. When a feature map is created of both frames the translation of the object of interest could be determined. The paper states that the keyframe should be changed in regular intervals to increase accuracy and speed. For the ImageNet VID dataset they set this interval on 10, the same as what is stated in the code.
+In the paper “Deep Feature Flow for Video Recognition” from Zhu et al [[5](https://arxiv.org/abs/1611.07715v2)]. they proposed the principles of keyframes. Here they state that a keyframe can be seen as a starting frame. With a non-keyframe being, in case of this paper, the next frame in the video. When a feature map is created of both frames the translation of the object of interest could be determined. The paper states that the keyframe should be changed in regular intervals to increase accuracy and speed. For the ImageNet VID dataset they set this interval on 10, the same as what is stated in the code.
 
 So, the writer of the paper introduced Learnable Spatio-Temporal Sampling (LSTS) to tackle this problem. LSTS will replace relatively long calculation times of the flow fields with predicting the next frame with learned weights within DFA and SRFU. The structure is shown in figure 1. The features F<sub>t</sub> and F<sub>t+k</sub> will be extracted from current image, I<sub>t</sub>, and the next image, I<sub>t+k</sub>. A point is taken from F<sub>t+k</sub> and will be compared to the surrounding points in F<sub>t</sub>, as shown in figure 2. By similarity comparison, between the point and the surrounding, the affinity weights could be calculated. This weight displays the flow between the current and the previous weight. With the weights and F<sub>t</sub> the predicted F’<sub>t+k</sub> could be calculated. This can then be propagated through training and returns an improved surrounding needed to predict F’<sub>t+k</sub>. If the network is trained it could increase FPS and accuracy.
 
@@ -120,35 +119,19 @@ During the reproduction with the code we came across a few discrepancies between
 
 These relatively small differences made it difficult to check whether we were doing the right thing. 
 
-
-Here comes the discussion of the paper.
-+ Flaws of the original paper.
-    + Many essentials steps/details are missing from the paper (i.e. the definition of the embedding function used).
-    + We suspect that LSTS is meant to be a type of transformer model, applied to the sequence of embeded featuers of video frames. In case it is indeed the case, this was not emphasized in the paper.
-+ Flaws of the github.
-    + Dependency list is missing.
-    + Instructions and automated installer only work for Linux.
-    + Windows installer is broken.
-+ Discrepancies in the implementation details between the original paper, and their implementation:
-    + Low2high transformation convolution network: 
-        + code says: (1x1x256), (3x3x256), (3x3x1024)
-        + paper says: (3x3x256), (3x3x512), (3x3x1024)
-    + Quality network:
-        + code says: (3x3x256), (3x3x16), (3x3x1)
-        + paper says: (3x3x256), (1x1x16), (1x1x1)
-    + Similarity weight normalization:
-        + Code says: softmax
-        + Paper says: <img src="https://latex.codecogs.com/svg.image?S(p_n)=&space;\frac{s(p_n)}{\sum_N&space;s(p_n)}">
+A paper from Edward Raff showed the most relevant factors for a reproducible paper, for us that is readability, code availability and hyperparameters specified. Just as Raff describes, readability of the paper was the biggest obstacle during the reproduction process. It took us several reads before the basics of the paper were clear. And while code included isn’t a big factor, for reproducibility of the paper, it could give valuable information that wasn’t clear from the paper. Combining these factors to find the hyperparameters and reasoning behind them were quite unclear from the original paper.
 
 ## References
 
-1] ["Learning Where to Focus for Efficient Video Object Detection" by Jiang et al.](https://arxiv.org/abs/1911.05253)
+1] [“A Step Toward Quantifying Independently Reproducible Machine Learning Research” by E. Raff.](https://arxiv.org/abs/1909.06674)
 
-2] [“Flow-Guided Feature Aggregation for Video Object Detection” by Zhu et al.](https://arxiv.org/abs/1703.10025)
+2] ["Learning Where to Focus for Efficient Video Object Detection" by Jiang et al.](https://arxiv.org/abs/1911.05253)
 
-3] [“Towards High Performance Video Object Detection” from Zhu et al.](https://arxiv.org/abs/1711.11577)
+3] [“Flow-Guided Feature Aggregation for Video Object Detection” by Zhu et al.](https://arxiv.org/abs/1703.10025)
 
-4] [“Deep Feature Flow for Video Recognition” from Zhu et al](https://arxiv.org/abs/1611.07715v2)
+4] [“Towards High Performance Video Object Detection” from Zhu et al.](https://arxiv.org/abs/1711.11577)
+
+5] [“Deep Feature Flow for Video Recognition” from Zhu et al](https://arxiv.org/abs/1611.07715v2)
 
 
 ## The machine learning reproducibility checklist
@@ -175,3 +158,24 @@ for all figures and tables that present empirical results, check that you includ
 - Clearly defined error bars. 
 - A description of results with central tendency (e.g., mean) and variation (e.g., stddev).
 - A description of the computing infrastructure used.
+
+## Information of Discussion 
+
+Here comes the discussion of the paper.
++ Flaws of the original paper.
+    + Many essentials steps/details are missing from the paper (i.e. the definition of the embedding function used).
+    + We suspect that LSTS is meant to be a type of transformer model, applied to the sequence of embeded featuers of video frames. In case it is indeed the case, this was not emphasized in the paper.
++ Flaws of the github.
+    + Dependency list is missing.
+    + Instructions and automated installer only work for Linux.
+    + Windows installer is broken.
++ Discrepancies in the implementation details between the original paper, and their implementation:
+    + Low2high transformation convolution network: 
+        + code says: (1x1x256), (3x3x256), (3x3x1024)
+        + paper says: (3x3x256), (3x3x512), (3x3x1024)
+    + Quality network:
+        + code says: (3x3x256), (3x3x16), (3x3x1)
+        + paper says: (3x3x256), (1x1x16), (1x1x1)
+    + Similarity weight normalization:
+        + Code says: softmax
+        + Paper says: <img src="https://latex.codecogs.com/svg.image?S(p_n)=&space;\frac{s(p_n)}{\sum_N&space;s(p_n)}">
