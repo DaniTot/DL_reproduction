@@ -101,8 +101,6 @@ As mentioned previously, we were unable to port the original implementation to P
 
 The weight generation and aggregation in LSTS is very slow. The total runtime for a single frame is 326.193 seconds, from which the batch randomization, video selection, and loading a frame takes 0.119 seconds, the low and high level feature extraction takes 11.12 seconds, and the weight generation and aggregation stages in LSTS take 314.95 seconds. It is hypotised that this is due to our failure to vectorize many of the operations, which remained nested for loops. The finction allocating the most memory is the OpenCV that loads the video frame. The memory usage of the program never exceeds 4.5MB during its runtime. Note that we measure the same performance when the gradient calculation is added, and based on these measurements, we could not identify either the source of the crash, or a warning sign predicting it.
 
-+ The weight generation and aggregation in LSTS is very. It is hypotised that this is due to our failure to vectorize many of the operations, which remained nested for loops.
-
 
 ## Conclusion
 
