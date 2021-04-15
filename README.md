@@ -119,7 +119,7 @@ During the reproduction with the code we came across a few discrepancies between
 
 These relatively small differences made it difficult to check whether we were doing the right thing. 
 
-A paper from Edward Raff showed the most relevant factors for a reproducible paper, for us that is readability, code availability and hyperparameters specified. Just as Raff describes, readability of the paper was the biggest obstacle during the reproduction process. It took us several reads before the basics of the paper were clear. And while code included isn’t a big factor, for reproducibility of the paper, it could give valuable information that wasn’t clear from the paper. Combining these factors to find the hyperparameters and reasoning behind them were quite unclear from the original paper.
+The paper from Edward Raff showed the most relevant factors for a reproducible paper[[1](https://arxiv.org/abs/1909.06674)], for us that is readability, code availability and hyperparameters specified. Just as Raff describes, readability of the paper was the biggest obstacle during the reproduction process. It took us several reads before the basics of the paper were clear. And while code included isn’t a big factor, for reproducibility of the paper, it could give valuable information that wasn’t clear from the paper. Combining these factors to find the hyperparameters and reasoning behind them were quite unclear from the original paper.
 
 ## References
 
