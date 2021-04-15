@@ -51,7 +51,7 @@ It takes two feature maps, F<sub>0</sub> and F<sub>1</sub>. N number of fraction
 
 ###### Similarity weights 
 
-The similarity s(p<sub>n</sub>) between features p<sub>n</sub> of F<sub>0</sub> and feature p<sub>0</sub> on F<sub>1</sub> is computed via dot product. Note that since p<sub>n</sub> is fractional, the corresponding values on F<sub>0</sub> must be interpolated. Bilinear interpolation was used:
+The similarity s(p<sub>n</sub>) between features p<sub>n</sub> of F<sub>0</sub> and feature p<sub>0</sub> on F<sub>1</sub> is computed via dot product. Note that since p<sub>n</sub> is fractional, the corresponding values on F<sub>0</sub> must be interpolated. Bilinear interpolation was used [[6](https://arxiv.org/abs/1703.06211)]:
 
 <img src="https://latex.codecogs.com/svg.image?f(F_0)_{p_n}=&space;\sum_q&space;G(p_n,q)\cdot&space;f(F_0)_q">
 
@@ -107,11 +107,11 @@ Here comes the conclusion of the paper
 
 ## Discussion
 
-We started this paper by introducing the reason behind this blogpost, looking how much we could reproduce given the information of the paper. During the reproduction we came across some problems that are noteworthy: missing explanations, outdated code and discrepancies between code and the paper.
+We started this paper by introducing the reason behind this blogpost, looking how much we could reproduce given the information of the paper. During the reproduction we came across some problems that are noteworthy: missing explanations, outdated code and discrepancies between code and the paper. With these in mind, we formed the following critique:
 
-An example of missing a proper explanation are the concepts of keyframe and non-keyframe. With the naming we could figure out that keyframe is superior to a non-keyframe, but what makes this difference? With the code it became clear that a keyframe happens once every 10 frames. Which only raised more questions, why 10? After reading several other papers it became clear that the keyframes and non-keyframe were used for SRFU and DFA to reduce the number of aggregations and so reduce computation. The number 10 is found as an optimal for ImageNet by a empirical study.
+Our first step of reproducing was installing and running the code linked to the paper. While the installations instructions and automated installer provided are only Linux compatible, translating the commands to Windows cmd syntax was straight forward. The installer python scripts for Windows were broken however. We suspect the reason for this might have been that we did not have the right dependencies with the right version, and a list of dependencies was not available. This eventually stopped us from ever training or testing the original implementation. After this setback and communication with the other groups with the same paper we made the decision to make a personal interpretation of the code. During the replication process we found out that a lot of the functions used were outdated or custom made by the author for MXNet in C++. Without much prior knowledge in coding, we couldn't replicate these functions. 
 
-Our first step of reproducing was installing and running the code linked to the paper. With the given Windows and Linux installer we couldn't figure out how to make this work. After this setback and communication with the other groups with the same paper we made the decision to make a personal interpretation of the code. During the replication process we found out that a lot of the functions used were outdated or custom made by the author. Without much prior knowledge in coding, in what we thought was C, we couldn't replicate these functions.
+An example of missing a proper explanation are the concepts of keyframe and non-keyframe. With the naming we could figure out that keyframe is superior to a non-keyframe, but what makes this difference? With the code it became clear that a keyframe happens once every 10 frames. Which only raised more questions, why 10? After reading several other papers it became clear that the keyframes and non-keyframe were used for SRFU and DFA to reduce the number of aggregations and so reduce computation. The number 10 is found as an optimal for ImageNet by a empirical study. The specifications of the embedding function were also missing from the paper. I say function because, even though the author distinguished between embedding functions f and g, its implementation uncovered that the two are the same.
 
 During the reproduction with the code we came across a few discrepancies between the original paper, and their implementation. Two convolution networks that we replicated, Low2High and Quality network, had discrepancies in their layers. For example, the Low2High network code states that the should exist out of 3 layers: (1x1x256), (3x3x256) and (3x3x1024). While the paper says that it should be (3x3x256), (3x3x512), (3x3x1024). Also functions that were stated in paper and code deviated from each other. Example is the similarity weight normalization we found in the code. Where they use the softmax function, while the paper says 
 
@@ -132,6 +132,8 @@ A paper from Edward Raff showed the most relevant factors for a reproducible pap
 4] [“Towards High Performance Video Object Detection” from Zhu et al.](https://arxiv.org/abs/1711.11577)
 
 5] [“Deep Feature Flow for Video Recognition” from Zhu et al](https://arxiv.org/abs/1611.07715v2)
+
+6] [“Deformable Convolutional Networks” from Dai et al](https://arxiv.org/abs/1703.06211)
 
 
 ## The machine learning reproducibility checklist
