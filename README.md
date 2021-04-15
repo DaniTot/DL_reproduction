@@ -107,7 +107,7 @@ Is the paper reproducible? With the effort we put into the project, I can confid
 
 ## Acknowledgements
 
-We would like to thank Xin Liu for the helpful discussion that helped us overcome obstacles during the project!
+We would like to thank Xin Liu for the helpful discussions that helped us overcome obstacles during the project!
 
 ## Discussion
 
